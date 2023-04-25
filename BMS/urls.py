@@ -1,33 +1,65 @@
-"""BMS URL Configuration
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/4.1/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
-from django.urls import path,include
+from django.urls import path, include
 import threading
-from BMS import device_control
-from Device import device_status
-from Device import device_control
+import socket
+import requests
+import json
+from Authenticate import views
+import public_ip as ip
+from django.shortcuts import render
+from getmac import get_mac_address as gma
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+s.connect(("8.8.8.8", 80))
+ip_address = (s.getsockname()[0])
+hostname = socket.gethostname()
+# print("my public ip: ",ip.get())
+macaddr = gma().upper()
+url = "http://bms.bi-team.in/api/licenseKeyStored"
+headers = {'Content-type': 'application/json', 'Accept': '*/*','Connection':'keep-alive','Accept-Encoding':'gzip, deflate, br','User-Agent':'PostmanRuntime/7.32.2',"Access-Control-Allow-Origin":''}
+get_auth_token= {
+"license_key":"BI25052023",
+"mac_address":str(macaddr),
+"ip_address":str(ip_address),
+}
+t = requests.post(url, json=get_auth_token ,headers = headers)
+res = json.loads(t.text)
+print(res['status'])
+# print(myip)
+# def index(request):
+#     if request.method == 'POST':
+#         input_text = request.POST.get('input-text')
+#         print(input_text)
+#         url = "http://tracker.bi-team.in/api/index.php"
+#         headers = {'Content-type': 'application/json', 'Accept': '*/*', 'Connection': 'keep-alive',
+#                    'Accept-Encoding': 'gzip, deflate, br', 'User-Agent': 'PostmanRuntime/7.32.2', "Access-Control-Allow-Origin": ''}
+#         get_auth_token = {
+#             "user_id": '2',
+#             "license_key": str(input_text),
+#             "mac_address": str(macaddr),
+#             "ip_address": str(ip.get()),
+#             "action": 'add_license_information'
+#         }
+#         t = requests.post(url, json=get_auth_token, headers=headers)
+#         res = json.loads(t.text)
+#         if res['status'] == "True":
+#             urlpatterns =[]
+#             url_list = [path('', include('Authenticate.urls')),
+#                         path('', include('Device.urls')),]
+#             for i in url_list:
+#                 urlpatterns.append(i)
+#             my_variable = "Login Succesfully"
+#             return render(request, 'loginSuccess.html', {'my_variable': my_variable})
+
+#         else:
+#             my_variable = "Login Unsuccesfull"
+#             urlpatterns = [
+#                         path('', index, name ='index'),]
+#             return render(request, 'Loginfail.html', {'my_variable': my_variable})
+
+#         # Do something with the input_text value
+#     return render(request, 'index.html')
 
 
-
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('',include('Authenticate.urls')),
-    path('',include('Device.urls')),
-    # path('',include('Inventory.urls')),
-]
 # device_control.main_config()
 # jsonUpdator = threading.Thread(target=device_control.client_main_config())
 # jsonUpdator.start()
@@ -35,3 +67,9 @@ urlpatterns = [
 # threading.Thread(target=device_status.getDeviceStatus())
 
 # device_status.getDeviceStatus()
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('Authenticate.urls')),
+    path('', include('Device.urls')),
+    # path('',include('Inventory.urls')),
+]

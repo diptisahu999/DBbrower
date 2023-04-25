@@ -7,10 +7,20 @@ from rest_framework.response import Response
 from Authenticate.models import Bms_Roles,Bms_Users,Bms_Users_Details,Bms_Users_register,Bms_Module_master
 from Authenticate.serializers import BmsUserDetailsSerializer,RoleSerializer,UserSerializer,ModuleSerializer
 from rest_framework.decorators import api_view
+from django.shortcuts import render
 # from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-import pdb
+import socket,requests,json
 from Device.models import *
+
+
+# headers = {
+#             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+
+
+# Create your views here.
+
+
 # b: set a breakpoint
 # c: continue debugging until you hit a breakpoint
 # s: step through the code
@@ -19,6 +29,7 @@ from Device.models import *
 # u: navigate up a stack frame
 # d: navigate down a stack frame
 # p: to print the value of an expression in the current context
+
 
 
 # class LoginView(APIView):
@@ -357,6 +368,24 @@ def module_detail(request, pk):
 
 
 
-    
+
+# def index(request):
+#     if request.method == 'POST':
+#         input_text = request.POST.get('input-text')
+#         print(input_text)
+#         url = "http://tracker.bi-team.in/api/index.php"
+#         headers = {'Content-type': 'application/json', 'Accept': '*/*','Connection':'keep-alive','Accept-Encoding':'gzip, deflate, br','User-Agent':'PostmanRuntime/7.32.2',"Access-Control-Allow-Origin":''}
+#         get_auth_token = {
+#         "user_id":'2',
+#         "license_key":str(input_text),
+#         "mac_address": str(macaddr),
+#         "ip_address":str(ip.get()),
+#         "action":'add_license_information'
+#         }
+#         t = requests.post(url, json=get_auth_token ,headers = headers)
+#         res = json.loads(t.text)
+#         res['status']
+#         # Do something with the input_text value
+#     return render(request, 'index.html')
         
 

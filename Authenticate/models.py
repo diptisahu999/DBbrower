@@ -7,9 +7,10 @@ from Device.models import bms_department_master,bms_locker
 
 class Bms_Module_master(models.Model):
     STATUS= [
-        ("A","Active"),
-        ("N","In-Active"),
+        ("Active","Active"),
+        ("In-Active","In-Active"),
     ]
+    
     module_name=models.CharField(max_length=254)
     module_slug=models.CharField(max_length=254)
     status = models.CharField(max_length=100,choices=STATUS,blank=True)
@@ -28,8 +29,8 @@ class Bms_Roles(models.Model):
     role_name=models.CharField(max_length=100)
     device_information= models.JSONField(default=dict, null=True, blank=True)
     STATUS= [
-        ("A","Active"),
-        ("N","In-Active"),
+        ("Active","Active"),
+        ("In-Active","In-Active"),
     ]
     status = models.CharField(max_length=100,choices=STATUS, blank=True)
     created_role_date=models.DateTimeField(default=timezone.now)
@@ -55,8 +56,8 @@ class Bms_User_Type(models.Model):
     # user_type_name=models.CharField(max_length=12)
     type_name=models.ManyToManyField(Bms_Roles,blank=True,related_name='aaa')
     STATUS= [
-        ("A","Active"),
-        ("N","In-Active"),
+        ("Active","Active"),
+        ("In-Active","In-Active"),
     ]
     status = models.CharField(max_length=100,choices=STATUS, blank=True)
     created_user_type_date=models.DateTimeField(default=timezone.now)
@@ -70,13 +71,13 @@ class Bms_User_Type(models.Model):
 class Bms_Users_Details(models.Model):
     # from Device.models import Bms_department_master,Bms_locker
     STATUS= [
-        ("A","Active"),
-        ("N","In-Active"),
+        ("Active","Active"),
+        ("In-Active","In-Active"),
     ]
     # user_id=models.ManyToManyField(Bms_Users,related_name='abc')
     # role_id=models.ManyToManyField(Bms_Roles,blank=True,related_name='xyz')
-    department_id=models.ManyToManyField(bms_department_master,related_name='dep')
-    locker_id=models.ManyToManyField(bms_locker,related_name='locker')
+    # department_id=models.ManyToManyField(bms_department_master,related_name='dep')
+    # locker_id=models.ManyToManyField(bms_locker,related_name='locker')
     first_name=models.CharField(max_length=254)
     last_name=models.CharField(max_length=254)
     image=models.ImageField(upload_to ='uploads/', blank=True)
@@ -100,8 +101,8 @@ class Bms_Users(models.Model):
     user_email=models.EmailField()
     user_password=models.CharField(max_length=254)
     STATUS= [
-        ("A","Active"),
-        ("N","In-Active"),
+        ("Active","Active"),
+        ("In-Active","In-Active"),
     ]
     status = models.CharField(max_length=100,choices=STATUS, blank=True)
     status = models.BooleanField(default=False)
@@ -126,8 +127,8 @@ class Bms_Users_register(models.Model):
     birthday=models.DateField(auto_now_add=True)
     address=models.TextField(max_length=2321)
     STATUS= [
-        ("A","Active"),
-        ("N","In-Active"),
+        ("Active","Active"),
+        ("In-Active","In-Active"),
     ]
     status = models.CharField(max_length=100,choices=STATUS, blank=True)
     created_user_details_date=models.DateTimeField(default=timezone.now)

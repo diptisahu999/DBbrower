@@ -9,8 +9,9 @@ from rest_framework import status
 from Device.device_control import client_main_config
 from Device.device_status import getDeviceStatus
 from . import consumer
+import requests,socket
+import json
 
-# Create your views here.
 
 @api_view(['GET', 'POST', 'DELETE'])
 def user_list(request):
@@ -123,7 +124,7 @@ def floor_details(request, pk):
  
     elif request.method == 'PUT': 
         tutorial_data = JSONParser().parse(request) 
-        tutorial_serializer = Bms_floor_serializer(tutorial, data=tutorial_data) 
+        tutorial_serializer = Bms_floor_master_Serializer_post(tutorial, data=tutorial_data) 
         if tutorial_serializer.is_valid(): 
             tutorial_serializer.save() 
             return JsonResponse(tutorial_serializer.data) 
@@ -175,7 +176,7 @@ def department(request, pk):
  
     elif request.method == 'PUT': 
         tutorial_data = JSONParser().parse(request) 
-        tutorial_serializer = Bms_department_master_Serializer(tutorial, data=tutorial_data) 
+        tutorial_serializer = Bms_department_master_Serializer_post(tutorial, data=tutorial_data) 
         if tutorial_serializer.is_valid(): 
             tutorial_serializer.save() 
             return JsonResponse(tutorial_serializer.data) 
@@ -223,7 +224,7 @@ def Bms_sub_area(request, pk):
  
     elif request.method == 'PUT': 
         tutorial_data = JSONParser().parse(request) 
-        tutorial_serializer = Bms_sub_area_master_Serializer(tutorial, data=tutorial_data) 
+        tutorial_serializer = Bms_sub_area_master_Serializer_post(tutorial, data=tutorial_data) 
         if tutorial_serializer.is_valid(): 
             tutorial_serializer.save() 
             return JsonResponse(tutorial_serializer.data) 
@@ -282,7 +283,7 @@ def Bms_locker_list_details(request, pk):
  
     elif request.method == 'PUT': 
         tutorial_data = JSONParser().parse(request) 
-        tutorial_serializer = Bms_locker_Serializer(tutorial, data=tutorial_data) 
+        tutorial_serializer = Bms_locker_Serializer_post(tutorial, data=tutorial_data) 
         if tutorial_serializer.is_valid(): 
             tutorial_serializer.save() 
             return JsonResponse(tutorial_serializer.data) 
@@ -342,7 +343,7 @@ def Device_list_details(request, pk):
  
     elif request.method == 'PUT': 
         tutorial_data = JSONParser().parse(request) 
-        tutorial_serializer = Bms_Devices_Serializer(tutorial, data=tutorial_data) 
+        tutorial_serializer = Bms_Devices_Serializer_post(tutorial, data=tutorial_data) 
         if tutorial_serializer.is_valid(): 
             tutorial_serializer.save() 
             client_main_config()
@@ -412,7 +413,7 @@ def bms_area_list_1(request, pk):
  
     elif request.method == 'PUT': 
         tutorial_data = JSONParser().parse(request) 
-        tutorial_serializer = bms_area_Serializer(tutorial, data=tutorial_data) 
+        tutorial_serializer = bms_area_Serializer_post(tutorial, data=tutorial_data) 
         if tutorial_serializer.is_valid(): 
             tutorial_serializer.save() 
             return JsonResponse(tutorial_serializer.data) 

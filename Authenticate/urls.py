@@ -6,6 +6,7 @@ from Authenticate import views
 from .views import LoginView
 
 urlpatterns = [ 
+    # path('', views.index, name='index'),
              
     path('manage_user_profile/', views.user_list),
     path('manage_user_profile/<int:pk>', views.user),

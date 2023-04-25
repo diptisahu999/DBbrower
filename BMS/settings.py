@@ -95,7 +95,7 @@ ASGI_APPLICATION = 'BMS.asgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
-        'NAME': 'BMS_v2_19april',
+        'NAME': 'BMS_v2_24april',
         'HOST': '127.0.0.1',
         'PORT': 27017,
     }

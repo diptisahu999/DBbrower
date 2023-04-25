@@ -15,7 +15,7 @@ s.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
 m=socket(AF_INET, SOCK_DGRAM)
 m.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 
-m.bind(('0.0.0.0', 6000))
+m.bind(('0.0.0.0', 6000))   
 
 rc = RelayKeys()
 
@@ -85,15 +85,16 @@ def getter(packet, detail):
         
 
 while True:
-    try:
-        pakage = m.recvfrom(4096)
-        for data in pakage:
-            device_id = getter(data.hex(), "D")
-            channel_id = getter(data.hex(), "C")
-            operation = getter(data.hex(), "O")
-            print(device_id)
-            print(channel_id)
-            print(operation)
-    except:
-        print(pakage)
+    pakage = m.recvfrom(9999)
+    print(pakage)
+    if pakage.find():
+        print("hey")
+        # for data in pakage:
+        #     device_id = getter(data.hex(), "D")
+        #     channel_id = getter(data.hex(), "C")
+        #     operation = getter(data.hex(), "O")
+        #     print(device_id)
+        #     print(channel_id)
+        #     print(operation)
+
 

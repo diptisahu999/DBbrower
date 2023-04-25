@@ -19,16 +19,17 @@ class MyAsyncConsumer(SyncConsumer):
 
 
     def websocket_receive(self, event):
+        a = getDeviceStatus()
         self.send({
             "type": "websocket.send",
-            # "text": event["text"],
+            "text": event['text']
         })
         # self.send(text_data="Hello world!")
     
 
     def chat_message(self,event):
-        print("data" ,event)
-        print("event .. " ,event['message'])
+        # print("data" ,event)
+        # print("event .. " ,event['message'])
         self.send({ 
             'type':'websocket.send'
         }
@@ -52,3 +53,4 @@ class Connected(AsyncConsumer):
     async def websocket_disconnect(self,event):
         print("Websocket Disconnected...",event)
         raise StopConsumer()
+    

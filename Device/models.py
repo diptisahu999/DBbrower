@@ -10,8 +10,8 @@ from django.utils import timezone
 class bms_building_master(models.Model):
     tower_name=models.CharField(max_length=100)
     STATUS= [
-        ("A","Active"),
-        ("N","In-Active"),
+        ("Active","Active"),
+        ("In-Active","In-Active"),
     ]
     status = models.CharField(max_length=100,choices=STATUS, blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
@@ -24,8 +24,8 @@ class bms_floor_master(models.Model):
     tower_id=models.ManyToManyField(bms_building_master)
     floor_name=models.CharField(max_length=100)
     STATUS= [
-        ("A","Active"),
-        ("N","In-Active"),
+        ("Active","Active"),
+        ("In-Active","In-Active"),
     ]
     status = models.CharField(max_length=100,choices=STATUS, blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
@@ -39,8 +39,8 @@ class bms_department_master(models.Model):
     department_name=models.CharField(max_length=100)
     floor_id=models.ManyToManyField(bms_floor_master,blank=True)
     STATUS= [
-        ("A","Active"),
-        ("N","In-Active"),
+        ("Active","Active"),
+        ("In-Active","In-Active"),
     ]
     status = models.CharField(max_length=100,choices=STATUS, blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
@@ -53,11 +53,10 @@ class bms_department_master(models.Model):
     
 class bms_area_master(models.Model):
     area_name=models.CharField(max_length=100)
-    floor_id=models.ManyToManyField(bms_floor_master)
-    tower_id=models.ManyToManyField(bms_building_master)
+    floor_id=models.ManyToManyField(bms_floor_master,blank=True)
     STATUS= [
-        ("A","Active"),
-        ("N","In-Active"),
+        ("Active","Active"),
+        ("In-Active","In-Active"),
     ]
     status = models.CharField(max_length=100,choices=STATUS, blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
@@ -73,10 +72,8 @@ class bms_area_master(models.Model):
 class bms_sub_area_master(models.Model):
     
     sub_area_name=models.CharField(max_length=100)
-    department_id=models.ManyToManyField(bms_department_master)
-    area_id=models.ManyToManyField(bms_area_master)
-    floor_id=models.ManyToManyField(bms_floor_master)
-    tower_id=models.ManyToManyField(bms_building_master)
+    # department_id=models.ManyToManyField(bms_department_master, blank=True)
+    area_id=models.ManyToManyField(bms_area_master,blank=True)
     on_image_path = models.CharField(max_length=255,blank=True)
     off_image_path = models.CharField(max_length=255,blank=True)
     width = models.CharField(max_length=100,blank=True)
@@ -84,8 +81,8 @@ class bms_sub_area_master(models.Model):
     seating_capacity=models.BigIntegerField()
     devices_details = models.JSONField(default=dict, null=True, blank=True)
     STATUS= [
-        ("A","Active"),
-        ("N","In-Active"),
+        ("Active","Active"),
+        ("In-Active","In-Active"),
     ]
     status = models.CharField(max_length=100,choices=STATUS, blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
@@ -101,13 +98,13 @@ class bms_sub_area_master(models.Model):
     
 class bms_locker(models.Model):
     CATEGORIES=[
-        ("N","Normal"),
-        ("B","Big"),
+        ("Normal","Normal"),
+        ("Big","Big"),
     ]
     
     STATUS= [
-    ("A","Active"),
-    ("N","Inactive"),
+        ("Active","Active"),
+        ("In-Active","In-Active"),
     ]
     
     locker_name=models.CharField(max_length=100)
@@ -122,14 +119,14 @@ class bms_locker(models.Model):
     
 class bms_access_control_rfid_master(models.Model):
     CARD_TYPES=[
-        ('N','No-assign'),
-        ('S','Static'),
-        ('D','Dynamic')
+        ('No-assign','No-assign'),
+        ('Static','Static'),
+        ('Dynamic','Dynamic')
     ]
     
     STATUS= [
-    ("A","Active"),
-    ("N","Inactive"),
+        ("Active","Active"),
+        ("In-Active","In-Active"),
     ]
     
     rfid_no=models.IntegerField()
@@ -150,17 +147,17 @@ class bms_access_control_rfid_master(models.Model):
 
 class bms_history(models.Model):
     TYPES=[
-        ('N','Newuser'),
-        ('V','Visitor'),
-        ('A','Access'),
-        ('C','Conference'),
+        ('Newuser','Newuser'),
+        ('Visitor','Visitor'),
+        ('Access','Access'),
+        ('Conference','Conference'),
     ]
     
     user_id=models.ManyToManyField(to='Authenticate.Bms_Users', blank=True)
     # user_id=models.ManyToManyField(Bms_Users, blank=True)
     STATUS= [
-        ("A","Active"),
-        ("N","In-Active"),
+        ("Active","Active"),
+        ("In-Active","In-Active"),
     ]
     status = models.CharField(max_length=100,choices=STATUS, blank=True)
     type=models.CharField(max_length=100, choices=TYPES)
@@ -177,8 +174,8 @@ class bms_settings(models.Model):
     # module_id=models.ManyToManyField(Bms_Module_master,blank=True)
     setting_data=models.JSONField(default=dict, null=True, blank=True)
     STATUS= [
-        ("A","Active"),
-        ("N","In-Active"),
+        ("Active","Active"),
+        ("In-Active","In-Active"),
     ]
     status = models.CharField(max_length=100,choices=STATUS, blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
@@ -189,8 +186,8 @@ class bms_hardware_type_master(models.Model):
     id = models.AutoField(primary_key=True,unique=True)
     name=models.CharField(max_length=12,blank=False, null=False)
     STATUS= [
-        ("A","Active"),
-        ("N","In-Active"),
+        ("Active","Active"),
+        ("In-Active","In-Active"),
     ]
     status = models.CharField(max_length=100,choices=STATUS, blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
@@ -207,8 +204,8 @@ class bms_device_type_master(models.Model):
     hardware_type_id=models.ManyToManyField(bms_hardware_type_master)
     name=models.CharField(max_length=12)
     STATUS= [
-        ("A","Active"),
-        ("N","In-Active"),
+        ("Active","Active"),
+        ("In-Active","In-Active"),
     ]
     status = models.CharField(max_length=100,choices=STATUS, blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
@@ -223,18 +220,17 @@ class bms_device_type_master(models.Model):
         
 class bms_device_information(models.Model):
     STATUS= [
-        ("Yes","Yes"),
-        ("No","No"),
-        
+        ("Active","Active"),
+        ("In-Active","In-Active"),
     ]
     # hardware_type_id=models.ManyToManyField(Bms_hardware_type,related_name='device')
     device_type=models.ManyToManyField(bms_device_type_master,blank=True)
     devices_details = models.ManyToManyField(bms_sub_area_master, blank=True)
-    device_name=models.CharField(max_length=12)
+    device_name=models.CharField(max_length=100)
     created_at=models.DateTimeField(auto_now_add=True)
     device_informations=models.JSONField(default=dict, null=True, blank=True)
-    status = models.BooleanField(default=False)
-    is_used=models.CharField(max_length=23,choices=STATUS)
+    status = models.CharField(max_length=100,default=False,choices=STATUS)
+    is_used=models.CharField(max_length=100,choices=STATUS)
     create_at=models.DateTimeField(default=timezone.now)
     updated_user_details_date=models.DateTimeField(auto_now=True)
 
@@ -263,8 +259,8 @@ class bms_user_area_cards_List(models.Model):
     card_name=models.CharField(max_length=100,blank=True)
     devices_details = models.JSONField(default=dict, null=True, blank=True)
     STATUS= [
-        ("A","Active"),
-        ("N","In-Active"),
+        ("Active","Active"),
+        ("In-Active","In-Active"),
     ]
     status = models.CharField(max_length=100,choices=STATUS, blank=True)
     created_at=models.DateTimeField(default=timezone.now)

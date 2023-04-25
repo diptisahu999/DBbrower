@@ -12,3 +12,17 @@ urlpatterns = [
     path('deleteupdatemanagestock/<int:pk>', views.Bms_manage_inventoryDetailView),
     
 ]
+
+
+# {
+#     "device_name":"LIGHT_FL_1",
+#     "device_informations": {
+#             "is_dimmable": "true",
+#             "isFan": "false",
+#             "device_id": "3",
+#             "channel_id": "18",
+#             "device_status": "false",
+#             "image_id": "1",
+#             "delay_second": "0"
+#         }
+# }
