@@ -9,6 +9,7 @@ This project develop an API that will allow us to interact with various IoT devi
 
 
 ## How to run project
+Must be install mongodb : https://www.mongodb.com/try/download/community
 
 Step 1: 
 ````pip3 install -r requirement.txt ````
