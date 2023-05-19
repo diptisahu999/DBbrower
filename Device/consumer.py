@@ -9,6 +9,8 @@ class MyAsyncConsumer(SyncConsumer):
     def websocket_connect(self,event):
         # print("Websocket Connected...",event)
         a = getDeviceStatus()
+        
+        
         self.send({
                 'type': 'websocket.accept',
             })

@@ -4,82 +4,85 @@ from .models import *
 # Register your models here.
 
 
-@admin.register(bms_building_master)
+@admin.register(BmsBuildingMaster)
 class Bms_building_masterAdmin(admin.ModelAdmin):
     list_display = ['id', 'tower_name', 'created_at', 'updated_at']
 
 
-@admin.register(bms_floor_master)
+@admin.register(BmsFloorMaster)
 class Bms_floor_masterAdmin(admin.ModelAdmin):
     list_display = ['id', 'floor_name', 'created_at', 'updated_at']
 
 
-@admin.register(bms_department_master)
+@admin.register(BmsDepartmentMaster)
 class Bms_department_masterAdmin(admin.ModelAdmin):
     list_display = ['id', 'department_name', 'created_at', 'updated_at']
 
-@admin.register(bms_area_master)
+
+@admin.register(BmsAreaMaster)
 class bms_area_master_admin(admin.ModelAdmin):
-    list_display = ['id', 'area_name','created_at', 'updated_at']
+    list_display = ['id', 'area_name', 'created_at', 'updated_at']
 
 
-@admin.register(bms_sub_area_master)
+@admin.register(BmsSubAreaMaster)
 class Bms_sub_area_masterAdmin(admin.ModelAdmin):
     list_display = ['id', 'sub_area_name', 'on_image_path', 'off_image_path',
                     'width', 'height', 'seating_capacity', 'created_at', 'updated_at']
 
 
-@admin.register(bms_locker)
+@admin.register(BmsLocker)
 class Bms_lockerAdmin(admin.ModelAdmin):
     list_display = ['id', 'locker_name', 'category',
                     'status', 'created_at', 'updated_at']
 
 
-@admin.register(bms_access_control_rfid_master)
+@admin.register(BmsAccessControlRfidMaster)
 class Bms_access_control_rfid_masterAdmin(admin.ModelAdmin):
     list_display = ['id', 'rfid_no', 'card_type', 'status',
                     'access_start_time', 'access_end_time', 'created_at', 'updated_at']
 
 
-@admin.register(bms_history)
+@admin.register(BmsHistory)
 class Bms_historyAdmin(admin.ModelAdmin):
-    list_display = ['id', 'type', 'description', 'created_at']
+    list_display = ['id', 'type',
+                    'description', 'status', 'created_at']
 
 
-@admin.register(bms_settings)
+@admin.register(BmsSettings)
 class Bms_settingsAdmin(admin.ModelAdmin):
     list_display = ['id', 'setting_data', 'created_at']
 
 
-@admin.register(bms_device_information)
+@admin.register(BmsDeviceInformation)
 class Bms_deviceAdmin(admin.ModelAdmin):
-    list_display = ['id', 'STATUS', 'device_name', 'created_at', 'device_informations',
-                    'status', 'is_used', 'create_at', 'updated_user_details_date']
+    list_display = ['id', 'device_name', 'create_at', 'device_informations',
+                    'status', 'is_used', 'updated_user_details_date']
 
 
-@admin.register(bms_hardware_type_master)
+@admin.register(BmsHardwareTypeMaster)
 class Bms_hardware_Admin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'created_at']
+    list_display = ['id', 'hardware_name', 'created_at']
 
 
-@admin.register(bms_device_type_master)
+@admin.register(BmsDeviceTypeMaster)
 class Bms_device_type_admin(admin.ModelAdmin):
     list_display = ['id',
-        'name',
-        'created_at',
-    ]
+                    'name',
+                    'created_at',
+                    ]
 
 
-@admin.register(Bms_device_status_history)
+@admin.register(BmsDeviceStatusHistory)
 class Bms_device_status_history_admin(admin.ModelAdmin):
-    list_display = ['id',
-                    'status']
+    list_display = ['device_data',
+                    'device_status',
+                    'date_time']
 
 
-@admin.register(bms_user_area_cards_List)
+@admin.register(BmsUserAreaCardsList)
 class Bms_user_area_cards_list_admin(admin.ModelAdmin):
     list_display = ['id',
-        'card_id',
-        'card_name',
-        'created_at',
-        'status']
+                    'card_id',
+                    'user_card_name',
+                    'created_at',
+                    'status']

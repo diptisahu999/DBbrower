@@ -1,276 +1,329 @@
-from django.db import models
 from django.utils import timezone
-
-
-# from Authodication.models import Bms_Users,Bms_Module_master
+from django.db import models
 
 
 
 # Create your models here
-class bms_building_master(models.Model):
-    tower_name=models.CharField(max_length=100)
-    STATUS= [
-        ("Active","Active"),
-        ("In-Active","In-Active"),
+class BmsBuildingMaster(models.Model):
+    STATUS = [
+        ("Active", "Active"),
+        ("In-Active", "In-Active"),
     ]
-    status = models.CharField(max_length=100,choices=STATUS, blank=True)
-    created_at=models.DateTimeField(auto_now_add=True)
-    updated_at=models.DateTimeField(auto_now_add=True)
-    
+    tower_name = models.CharField(max_length=100)
+    status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
     def __str__(self):
         return self.tower_name
-    
-class bms_floor_master(models.Model):
-    tower_id=models.ManyToManyField(bms_building_master)
-    floor_name=models.CharField(max_length=100)
-    STATUS= [
-        ("Active","Active"),
-        ("In-Active","In-Active"),
+
+    class Meta():
+        db_table = 'bms_building_master'
+
+
+class BmsFloorMaster(models.Model):
+    STATUS = [
+        ("Active", "Active"),
+        ("In-Active", "In-Active"),
     ]
-    status = models.CharField(max_length=100,choices=STATUS, blank=True)
-    created_at=models.DateTimeField(auto_now_add=True)
-    updated_at=models.DateTimeField(auto_now_add=True)
-    
+    tower_data = models.ForeignKey(BmsBuildingMaster,on_delete=models.CASCADE,related_name='floor_data',null=True,blank=True)   ## changeses
+    floor_name = models.CharField(max_length=100)
+    status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
     def __str__(self):
         return self.floor_name
-    
-    
-class bms_department_master(models.Model):
-    department_name=models.CharField(max_length=100)
-    floor_id=models.ManyToManyField(bms_floor_master,blank=True)
-    STATUS= [
-        ("Active","Active"),
-        ("In-Active","In-Active"),
+
+    class Meta():
+        db_table = 'bms_floor_master'
+
+
+class BmsAreaMaster(models.Model):
+    STATUS = [
+        ("Active", "Active"),
+        ("In-Active", "In-Active"),
     ]
-    status = models.CharField(max_length=100,choices=STATUS, blank=True)
-    created_at=models.DateTimeField(auto_now_add=True)
-    updated_at=models.DateTimeField(auto_now_add=True)
-    
-    
-    def __str__(self):
-        return self.department_name
-    
-    
-class bms_area_master(models.Model):
-    area_name=models.CharField(max_length=100)
-    floor_id=models.ManyToManyField(bms_floor_master,blank=True)
-    STATUS= [
-        ("Active","Active"),
-        ("In-Active","In-Active"),
-    ]
-    status = models.CharField(max_length=100,choices=STATUS, blank=True)
-    created_at=models.DateTimeField(auto_now_add=True)
-    updated_at=models.DateTimeField(auto_now_add=True)
-    
-    
+    area_name = models.CharField(max_length=100)
+    floor_data = models.ForeignKey(BmsFloorMaster,on_delete=models.CASCADE,related_name='areas_data',null=True,blank=True)
+    status = models.CharField(max_length=100, choices=STATUS,default=STATUS[0][0])
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
     def __str__(self):
         return self.area_name
-    
-    class Meta():
-        db_table='bms_area_master_tbl'  
-    
-class bms_sub_area_master(models.Model):
-    
-    sub_area_name=models.CharField(max_length=100)
-    # department_id=models.ManyToManyField(bms_department_master, blank=True)
-    area_id=models.ManyToManyField(bms_area_master,blank=True)
-    on_image_path = models.CharField(max_length=255,blank=True)
-    off_image_path = models.CharField(max_length=255,blank=True)
-    width = models.CharField(max_length=100,blank=True)
-    height = models.CharField(max_length=100,blank=True)
-    seating_capacity=models.BigIntegerField()
-    devices_details = models.JSONField(default=dict, null=True, blank=True)
-    STATUS= [
-        ("Active","Active"),
-        ("In-Active","In-Active"),
-    ]
-    status = models.CharField(max_length=100,choices=STATUS, blank=True)
-    created_at=models.DateTimeField(auto_now_add=True)
-    updated_at=models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return self.sub_area_name
-    
-    class Meta():
-        db_table='bms_sub_area_master_tbl'  
-    
-    
-    
-class bms_locker(models.Model):
-    CATEGORIES=[
-        ("Normal","Normal"),
-        ("Big","Big"),
-    ]
-    
-    STATUS= [
-        ("Active","Active"),
-        ("In-Active","In-Active"),
-    ]
-    
-    locker_name=models.CharField(max_length=100)
-    sub_area_id=models.ManyToManyField(bms_sub_area_master, blank=True)
-    category=models.CharField(max_length=100,choices=CATEGORIES)
-    status=models.CharField(max_length=100, choices=STATUS)
-    created_at=models.DateTimeField(auto_now_add=True)
-    updated_at=models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return self.locker_name
-    
-class bms_access_control_rfid_master(models.Model):
-    CARD_TYPES=[
-        ('No-assign','No-assign'),
-        ('Static','Static'),
-        ('Dynamic','Dynamic')
-    ]
-    
-    STATUS= [
-        ("Active","Active"),
-        ("In-Active","In-Active"),
-    ]
-    
-    rfid_no=models.IntegerField()
-    user_id=models.ManyToManyField(to='Authenticate.Bms_Users')
-    # user_id=models.ManyToManyField(Bms_Users,blank=True)
-    card_type=models.CharField(max_length=100, choices=CARD_TYPES)
-    access_area_id=models.ManyToManyField(bms_sub_area_master,blank=True)
-    status=models.CharField(max_length=100, choices=STATUS)
-    access_start_time=models.DateField(default=timezone.now)
-    access_end_time=models.DateField(default=timezone.now)
-    created_at=models.DateTimeField(auto_now_add=True)
-    updated_at=models.DateTimeField(auto_now_add=True)
-    
-    
-    def __str__(self):
-        return str(self.rfid_no)
-    
 
-class bms_history(models.Model):
-    TYPES=[
-        ('Newuser','Newuser'),
-        ('Visitor','Visitor'),
-        ('Access','Access'),
-        ('Conference','Conference'),
-    ]
-    
-    user_id=models.ManyToManyField(to='Authenticate.Bms_Users', blank=True)
-    # user_id=models.ManyToManyField(Bms_Users, blank=True)
-    STATUS= [
-        ("Active","Active"),
-        ("In-Active","In-Active"),
-    ]
-    status = models.CharField(max_length=100,choices=STATUS, blank=True)
-    type=models.CharField(max_length=100, choices=TYPES)
-    description=models.JSONField(default=dict, null=True, blank=True)
-    created_at=models.DateTimeField(auto_now_add=True)
-    
-    
-    def __str__(self):
-        return self.type
-    
-
-class bms_settings(models.Model):
-    module_id=models.ManyToManyField(to='Authenticate.Bms_Module_master',blank=True)
-    # module_id=models.ManyToManyField(Bms_Module_master,blank=True)
-    setting_data=models.JSONField(default=dict, null=True, blank=True)
-    STATUS= [
-        ("Active","Active"),
-        ("In-Active","In-Active"),
-    ]
-    status = models.CharField(max_length=100,choices=STATUS, blank=True)
-    created_at=models.DateTimeField(auto_now_add=True)
-    
-    
-    
-class bms_hardware_type_master(models.Model):
-    id = models.AutoField(primary_key=True,unique=True)
-    name=models.CharField(max_length=12,blank=False, null=False)
-    STATUS= [
-        ("Active","Active"),
-        ("In-Active","In-Active"),
-    ]
-    status = models.CharField(max_length=100,choices=STATUS, blank=True)
-    created_at=models.DateTimeField(auto_now_add=True)
-    
-    
-    def __str__(self):
-        return self.name
-    
     class Meta():
-        db_table='bms_hardware_tbl'
+        db_table = 'bms_area_master '
         
         
-class bms_device_type_master(models.Model):
-    hardware_type_id=models.ManyToManyField(bms_hardware_type_master)
-    name=models.CharField(max_length=12)
-    STATUS= [
-        ("Active","Active"),
-        ("In-Active","In-Active"),
-    ]
-    status = models.CharField(max_length=100,choices=STATUS, blank=True)
-    created_at=models.DateTimeField(auto_now_add=True)
-    
-    
-    def __str__(self):
-        return self.name
-    
-    class Meta():
-        db_table='bms_device_tbl'
         
-        
-class bms_device_information(models.Model):
-    STATUS= [
-        ("Active","Active"),
-        ("In-Active","In-Active"),
-    ]
-    # hardware_type_id=models.ManyToManyField(Bms_hardware_type,related_name='device')
-    device_type=models.ManyToManyField(bms_device_type_master,blank=True)
-    devices_details = models.ManyToManyField(bms_sub_area_master, blank=True)
-    device_name=models.CharField(max_length=100)
-    created_at=models.DateTimeField(auto_now_add=True)
-    device_informations=models.JSONField(default=dict, null=True, blank=True)
-    status = models.CharField(max_length=100,default=False,choices=STATUS)
-    is_used=models.CharField(max_length=100,choices=STATUS)
-    create_at=models.DateTimeField(default=timezone.now)
-    updated_user_details_date=models.DateTimeField(auto_now=True)
 
+class BmsDeviceInformation(models.Model):
+    device_slug = [("LED","LED"),
+                   ("AC","AC"),
+                   ("TV","TV"),
+                   ("CURTAIN","CURTAIN"),
+                   ("PROJECTOR","PROJECTOR"),
+                   ("AVR","AVR"),
+                   ("MP","MP"),
+                   ("BRP","BRP"),
+                   ("STB","STB"),
+                   ("CAMERA","CAMERA"),
+                   ]
+
+    is_used_STATUS = [
+        ("Yes", "Yes"),
+        ("No", "No"),
+    ]
+    STATUS = [
+        ("Active", "Active"),
+        ("In-Active", "In-Active"),
+    ]
+    device_name = models.CharField(max_length=100)
+    device_type = models.CharField(max_length=100 ,choices=device_slug,blank=True)
+    is_used = models.CharField(
+        max_length=23, choices=is_used_STATUS, default=is_used_STATUS[1][1])
+    device_informations = models.JSONField(null=True, blank=True)
+    status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
+    create_at = models.DateTimeField(default=timezone.now, blank=True)
+    updated_user_details_date = models.DateTimeField(auto_now=True)
+    # devices_details = models.ForeignKey(bms_sub_area_master,on_delete=models.CASCADE,related_name='device_data')
+    # hardware_type_id=models.ForeignKey(Bms_hardware_type,on_delete=models.CASCADE,related_name='device')
+    
+    
     def __str__(self):
         return self.device_name
-    
+
     class Meta():
-        db_table='bms_device_master_tbl'
-        
-        
-class Bms_device_status_history(models.Model):
-    device_id=models.ManyToManyField(bms_sub_area_master,related_name='device_id')
-    status = models.BooleanField(default=False)
-    
-    # def __str__(self):
-    #     return self.device_name
-    
-    class Meta():
-        db_table='bms_device_status_tbl'
+        db_table = 'bms_device_information'
 
 
-class bms_user_area_cards_List(models.Model):
-    user_id=models.ManyToManyField(to='Authenticate.Bms_Users', blank=True)
-    card_id=models.IntegerField()
-    card_type=models.CharField(max_length=100,blank=True)
-    card_name=models.CharField(max_length=100,blank=True)
-    devices_details = models.JSONField(default=dict, null=True, blank=True)
-    STATUS= [
-        ("Active","Active"),
-        ("In-Active","In-Active"),
+class BmsDepartmentMaster(models.Model):
+    STATUS = [
+        ("Active", "Active"),
+        ("In-Active", "In-Active"),
     ]
-    status = models.CharField(max_length=100,choices=STATUS, blank=True)
-    created_at=models.DateTimeField(default=timezone.now)
-    department_id=models.ManyToManyField(bms_department_master,blank=True)
-    # floor_id=models.ManyToManyRel(Bms_floor_master)
-    status = models.BooleanField(default=False)
-    
-    # def __str__(self):
-    #     return self.device_name
-    
-    class Meta():
-        db_table='bms_user_area_cards_list_tbl'
+    department_name = models.CharField(max_length=100)
+    status = models.CharField(max_length=100, choices=STATUS,default=STATUS[0][0])
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.department_name
+
+    class Meta():
+        db_table = 'bms_department_master'
+
+
+class BmsSubAreaMaster(models.Model):
+    STATUS = [
+        ("Active", "Active"),
+        ("In-Active", "In-Active"),
+    ]
+    # floor_id=models.ForeignKey(bms_floor_master,on_delete=models.CASCADE)
+    # tower_details=models.ForeignKey(bms_building_master,on_delete=models.CASCADE)
+    sub_area_name = models.CharField(max_length=100)
+    area_data = models.ForeignKey(BmsAreaMaster,on_delete=models.CASCADE,related_name='sub_areas_data',null=True,blank=True)
+    on_image_path = models.CharField(max_length=255, blank=True)
+    off_image_path = models.CharField(max_length=255, blank=True)
+    width = models.CharField(max_length=100, blank=True)
+    height = models.CharField(max_length=100, blank=True)
+    seating_capacity = models.BigIntegerField()
+    devices_details = models.ManyToManyField(BmsDeviceInformation,limit_choices_to={'is_used': 'no'})
+    status = models.CharField(max_length=100, choices=STATUS,default=STATUS[0][0])
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.sub_area_name
+
+    class Meta():
+        db_table = 'bms_sub_area_master'
+
+
+class BmsLocker(models.Model):
+    CATEGORIES = [
+        ("Normal", "Normal"),
+        ("Big", "Big"),
+    ]
+
+    STATUS = [
+        ("Active", "Active"),
+        ("In-Active", "In-Active"),
+    ]
+    category = models.CharField(max_length=100, choices=CATEGORIES)
+    sub_area_data = models.ForeignKey(BmsSubAreaMaster,on_delete=models.CASCADE)
+    locker_name = models.CharField(max_length=100)
+    status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.locker_name
+
+    class Meta():
+        db_table = 'bms_locker'
+
+
+class BmsAccessControlRfidMaster(models.Model):
+    CARD_TYPES = [
+        ('No-assign', 'No-assign'),
+        ('Static', 'Static'),
+        ('Dynamic', 'Dynamic')
+    ]
+
+    STATUS = [
+        ("Active", "Active"),
+        ("In-Active", "In-Active"),
+    ]
+    user_data = models.ForeignKey(to='Authenticate.BmsUser',on_delete=models.CASCADE)
+    rfid_no = models.IntegerField()
+    card_type = models.CharField(max_length=100, choices=CARD_TYPES)
+    access_area_data = models.ForeignKey(BmsSubAreaMaster,on_delete=models.CASCADE)
+    status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
+    access_start_time = models.DateField(default=timezone.now)
+    access_end_time = models.DateField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.rfid_no)
+
+    class Meta():
+        db_table = 'bms_access_control_rfid_master'
+
+
+class BmsHistory(models.Model):
+    TYPES = [
+        ('Newuser', 'Newuser'),
+        ('Visitor', 'Visitor'),
+        ('Access', 'Access'),
+        ('Conference', 'Conference'),
+    ]
+    STATUS = [
+        ("Active", "Active"),
+        ("In-Active", "In-Active"),
+    ]
+    user_data = models.ForeignKey(to='Authenticate.BmsUser',on_delete=models.CASCADE)
+    type = models.CharField(max_length=100, choices=TYPES)
+    description = models.JSONField(default=dict, null=True, blank=True)
+    status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.type
+
+    class Meta():
+        db_table = 'bms_history'
+
+
+class BmsSettings(models.Model):
+    STATUS = [
+        ("Active", "Active"),
+        ("In-Active", "In-Active"),
+    ]
+    module_data = models.ForeignKey(to='Authenticate.BmsModuleMaster',on_delete=models.CASCADE)
+    setting_data = models.JSONField(default=dict, null=True)
+    status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.setting_data
+
+    class Meta():
+        db_table = 'bms_settings'
+
+
+class BmsHardwareTypeMaster(models.Model):
+    Hardware_choice = [
+        ("Relay", "Relay"),
+        ("Dali", "Dali"),
+        ("CoolMaster", "CoolMaster"),
+    ]
+    
+    STATUS = [
+        ("Active", "Active"),
+        ("In-Active", "In-Active"),
+    ]
+    id = models.AutoField(primary_key=True, unique=True)
+    hardware_name = models.CharField(
+        max_length=12, choices=Hardware_choice, blank=True, null=False)
+    status = models.CharField(max_length=100, choices=STATUS,default=STATUS[0][0])
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.hardware_name
+
+    class Meta():
+        db_table = 'bms_hardware_type_master'
+
+
+class BmsDeviceTypeMaster(models.Model):
+    device_slug = [("LED","LED"),
+                   ("AC","AC"),
+                   ("TV","TV"),
+                   ("CURTAIN","CURTAIN"),
+                   ("PROJECTOR","PROJECTOR"),
+                   ("AVR","AVR"),
+                   ("MP","MP"),
+                   ("BRP","BRP"),
+                   ("STB","STB"),
+                   ("CAMERA","CAMERA"),
+                   ]
+    
+    
+    STATUS = [
+        ("Active", "Active"),
+        ("In-Active", "In-Active"),
+    ]
+    
+    hardware_type_data = models.ForeignKey(BmsHardwareTypeMaster,on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    device_type_slug = models.CharField(max_length=100,choices=device_slug)
+    status = models.CharField(max_length=100, choices=STATUS,default=STATUS[0][0])
+    created_at = models.DateTimeField(auto_now_add=True)
+     
+    def __str__(self):
+        return self.name
+
+    class Meta():
+        db_table = 'bms_device_type_master'
+        
+        
+    
+
+class BmsDeviceStatusHistory(models.Model):
+    device_data = models.ForeignKey(BmsSubAreaMaster,on_delete=models.CASCADE)
+    device_status = models.BooleanField(default=False)
+    user_data = models.ForeignKey(to='Authenticate.BmsUser',on_delete=models.CASCADE)
+    date_time = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.device_data)
+
+    class Meta():
+        db_table = 'bms_device_status_history'
+
+
+class BmsUserAreaCardsList(models.Model):
+    STATUS = [
+        ("Active", "Active"),
+        ("In-Active", "In-Active"),
+    ]
+    user_data = models.ForeignKey(to='Authenticate.BmsUser',on_delete=models.CASCADE)
+    card_id = models.IntegerField()
+    user_card_name = models.CharField(max_length=100, blank=True)
+    devices_details = models.ManyToManyField(BmsDeviceInformation,blank=True)
+    card_slug = models.CharField(max_length=100, blank=True)
+    status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
+    created_at = models.DateTimeField(default=timezone.now)
+    # floor_id=models.ForeignKey(Bms_floor_master,on_delete=models.CASCADE)
+    status = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.user_card_name
+
+    class Meta():
+        db_table = 'bms_user_area_cards List'

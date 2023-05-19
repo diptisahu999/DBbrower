@@ -1,29 +1,52 @@
 from django.contrib import admin
 from django.urls import path, include
 import threading
-import socket
+from socket import *
+# import socket
 import requests
 import json
 from Authenticate import views
 import public_ip as ip
 from django.shortcuts import render
 from getmac import get_mac_address as gma
-s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-s.connect(("8.8.8.8", 80))
-ip_address = (s.getsockname()[0])
-hostname = socket.gethostname()
-# print("my public ip: ",ip.get())
-macaddr = gma().upper()
-url = "http://bms.bi-team.in/api/licenseKeyStored"
-headers = {'Content-type': 'application/json', 'Accept': '*/*','Connection':'keep-alive','Accept-Encoding':'gzip, deflate, br','User-Agent':'PostmanRuntime/7.32.2',"Access-Control-Allow-Origin":''}
-get_auth_token= {
-"license_key":"BI25052023",
-"mac_address":str(macaddr),
-"ip_address":str(ip_address),
-}
-t = requests.post(url, json=get_auth_token ,headers = headers)
-res = json.loads(t.text)
-print(res['status'])
+
+try:
+    s = socket(AF_INET,SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    ip_address = (s.getsockname()[0])
+    # print("my public ip: ",ip.get())
+    # macaddr = gma().upper()
+    # url = "http://bms.bi-team.in/api/licenseKeyStored"
+    # headers = {'Content-type': 'application/json', 'Accept': '*/*','Connection':'keep-alive','Accept-Encoding':'gzip, deflate, br','User-Agent':'PostmanRuntime/7.32.2',"Access-Control-Allow-Origin":''}
+    # get_auth_token= {
+    # "license_key":"BI25052023",
+    # "mac_address":str(macaddr),
+    # "ip_address":str(ip_address),
+    # }
+    # t = requests.post(url, json=get_auth_token ,headers = headers)
+    # res = json.loads(t.text)
+    # print(res['status'])
+    s=socket(AF_INET, SOCK_DGRAM)
+    s.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
+    m=socket(AF_INET, SOCK_DGRAM)
+    m.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+    m.bind(('0.0.0.0', 6000))
+except:
+    print ("Socket Error")
+
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('Authenticate.urls')),
+    path('', include('Device.urls')),
+    # path('',include('Inventory.urls')),
+    path('', include('Camera.urls')),
+]
+
+
+
+
+
 # print(myip)
 # def index(request):
 #     if request.method == 'POST':
@@ -67,9 +90,3 @@ print(res['status'])
 # threading.Thread(target=device_status.getDeviceStatus())
 
 # device_status.getDeviceStatus()
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('Authenticate.urls')),
-    path('', include('Device.urls')),
-    # path('',include('Inventory.urls')),
-]

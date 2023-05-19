@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'Camera',
     'jazzmin',
     'channels',
     'django.contrib.admin',
@@ -41,11 +42,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'Authenticate',
     'rest_framework',
-    # 'rest_framework_simplejwt',
+    'rest_framework_simplejwt',
+    'rest_framework.authtoken',
     'Device',
     "corsheaders",
     # 'BMS_Host'
     'Inventory',
+    
 ]
 
 MIDDLEWARE = [
@@ -85,21 +88,23 @@ ASGI_APPLICATION = 'BMS.asgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
+#         'ENGINE': 'djongo',
+#         'NAME': 'BMS_v2_3may',
+#         'HOST': '127.0.0.1',
+#         'PORT': 27017,
 #     }
 # }
 
 DATABASES = {
     'default': {
-        'ENGINE': 'djongo',
-        'NAME': 'BMS_v2_24april',
-        'HOST': '127.0.0.1',
-        'PORT': 27017,
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
 
 
 
@@ -179,3 +184,19 @@ class CorsMiddleware:
         response['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
         response['Access-Control-Allow-Headers'] = 'Content-Type'
         return response
+    
+
+## globally Authenticate
+
+    
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': [
+#         'rest_framework.authentication.BasicAuthentication',
+#         'rest_framework.authentication.SessionAuthentication',
+#     ],
+#     'DEFAULT_PERMISSION_CLASSES': [
+#         # 'rest_framework.permissions.IsAuthenticated',
+#         'rest_framework.permissions.IsAdminUser',
+#         # 'rest_framework.permissions.IsAuthenticated',
+#     ]
+# }

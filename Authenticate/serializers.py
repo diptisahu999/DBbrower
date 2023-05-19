@@ -1,76 +1,95 @@
-from rest_framework import serializers 
-from Authenticate.models import Bms_Module_master,Bms_Roles,Bms_User_Type,Bms_Users,Bms_Users_Details,Bms_Users_register
-from Device.models import bms_department_master,bms_locker
-
-
-
+from rest_framework import serializers
+from Authenticate.models import BmsModuleMaster, BmsRole, BmsUserType, BmsUser, BmsUsersDetail, BmsRolesDevicesInformation
+from Device.models import BmsDepartmentMaster, BmsLocker
 
 
 class ModuleSerializer(serializers.ModelSerializer):
     class Meta:
-        model=Bms_Module_master
-        fields='__all__'
- 
+        model = BmsModuleMaster
+        fields = ["id",
+                  "module_name",
+                  "module_slug",
+                  "status",]
+
+
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
-        permissions_id = ModuleSerializer(many=True,read_only=True)
-        model=Bms_Roles
-        fields='__all__'
-        
+        model = BmsRole
+        fields = ['id', 'role_name', 'modules_data']
+
+
 class UserTypeSerializer(serializers.ModelSerializer):
-
     class Meta:
-        model=Bms_User_Type
-        fields=['id','user_type_name']        
-        
-        
+        model = BmsUserType
+        fields = ['id']
+
+
 class DepertmentSerializer(serializers.ModelSerializer):
-
     class Meta:
-        model=bms_department_master
-        fields=['id','department_name'] 
-        
+        model = BmsDepartmentMaster
+        fields = ['department_name']
+
+
 class lockerSerializer(serializers.ModelSerializer):
     class Meta:
-        model=bms_locker
-        fields=['id','locker_name']
-         
-class BmsUserSerializer(serializers.ModelSerializer):
-    # user_type_id=UserTypeSerializer(many=True,read_only=True)
+        model = BmsLocker
+        fields = ['locker_name']
 
+
+class BmsUserSerializer(serializers.ModelSerializer):
     class Meta:
-        role_id=RoleSerializer(many=True,read_only=True)
-        department_id=DepertmentSerializer(many=True,read_only=True)
-        locker_id=lockerSerializer(many=True,read_only=True)
-        model = Bms_Users_Details
-        fields = '__all__'
-        
+        model = BmsUsersDetail
+        fields ='__all__'
+        depth = 10
+
+
 class BmsUserDetailsSerializer(serializers.ModelSerializer):
 
-    
     class Meta:
-        role_id=RoleSerializer(many=True,read_only=True)
-        user_details=BmsUserSerializer(many=True,read_only=True)
-        department_id=DepertmentSerializer(many=True,read_only=True)
-        locker_id=lockerSerializer(many=True,read_only=True)
-        model = Bms_Users
-        fields = '__all__'
-        
-        
+        # role_id=RoleSerializer(many=True,read_only=True)
+        # user_details=BmsUserSerializer(write_only=True)
+        # department_id=DepertmentSerializer(many=True,read_only=True)
+        # locker_id=lockerSerializer(many=True,read_only=True)
+        model = BmsUser
+        fields = ('id','user_email','user_password','domain_type')
+        depth = 10
 
-# user registation        
-        
-class UserSerializer(serializers.ModelSerializer):
+
+class LoginSerializer(serializers.ModelSerializer):
 
     class Meta:
-        department_id=DepertmentSerializer(many=True,read_only=True)
-        locker_id=lockerSerializer(many=True,read_only=True)
-        model = Bms_Users_Details
+        model = BmsUser
         fields = '__all__'
-        
-        
-        
-#user Views
+        depth = 10
+
+
+# user registation
+
+# class UserSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = BmsUsersDetail
+#         fields = '__all__'
+
+
+# user Views
 class Manage_user_view(serializers.ModelSerializer):
     class Meta:
         model = '__all__'
+
+
+class RolesDeviceInformationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BmsRolesDevicesInformation
+        # fields = '__all__'
+        fields = ['id', 'role_id', 'subarea_id',
+                  'device_information_id', 'created_date']
+
+        depth = 10
+
+
+class RolesDeviceInformationSerializerPost(serializers.ModelSerializer):
+    class Meta:
+        model = BmsRolesDevicesInformation
+        # fields = '__all__'
+        fields = ['id', 'role_id', 'device_information_id']
+        # depth=10

@@ -4,388 +4,348 @@ from django.http.response import JsonResponse
 from rest_framework.parsers import JSONParser 
 from rest_framework import status
 from rest_framework.response import Response 
-from Authenticate.models import Bms_Roles,Bms_Users,Bms_Users_Details,Bms_Users_register,Bms_Module_master
-from Authenticate.serializers import BmsUserDetailsSerializer,RoleSerializer,UserSerializer,ModuleSerializer
-from rest_framework.decorators import api_view
-from django.shortcuts import render
-# from rest_framework_simplejwt.tokens import RefreshToken
+from Authenticate.models import *
+from Authenticate.serializers import *
+from rest_framework.decorators import api_view,permission_classes,authentication_classes
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-import socket,requests,json
-from Device.models import *
-
-
-# headers = {
-#             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
-
-
-# Create your views here.
-
-
-# b: set a breakpoint
-# c: continue debugging until you hit a breakpoint
-# s: step through the code
-# n: to go to next line of code
-# l: list source code for the current file (default: 11 lines including the line being executed)
-# u: navigate up a stack frame
-# d: navigate down a stack frame
-# p: to print the value of an expression in the current context
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import SessionAuthentication,BasicAuthentication
 
 
 
-# class LoginView(APIView):
-#     def post(self,request,format=None):
-#         tutorials = Bms_Users.objects.all()
-#         serializer = BmsUserDetailsSerializer(tutorials, many=True)
-      
-#         return Response({"data":"true","status_code": 200, "message": "Login Successfully", "response":serializer.data})
+# login api
+
+
+def get_tokens_for_user(user):
+    refresh = RefreshToken.for_user(user)
+
+    return {
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+    }
+    
+    
 
 class LoginView(APIView):
-    def post(self,request,format=None):
-        # tutorials = Bms_Users.objects.all()
-        serializer=BmsUserDetailsSerializer(data=request.data)
-        # serializer = BmsUserDetailsSerializer(tutorials, many=True)
-        # print(serializer)
-        if serializer.is_valid():
-            user_email=serializer.data.get('user_email')
-            user_password=serializer.data.get('user_password')
-            user=Bms_Users.objects.filter(user_email=user_email,user_password=user_password).first()
-            
-            # user=authenticate(user_email=user_email,user_password=user_password)
-
-            if user is not None:
-                # token=get_tokens_for_user(user)
-                tutorials = Bms_Users.objects.all()
-                tutorials_serializer = BmsUserDetailsSerializer(tutorials, many=True)
-
-                return Response({"data":"true","status_code": 200, "message": "Login Successfully","response":tutorials_serializer.data})
-            else:
-                return Response({"status_code": "404",
-                    'error':{'non_field_error':['Email or password is not valid' ]}})
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)    
-
+    def post(self, request, format=None):
+        login_serializer=BmsUserDetailsSerializer(data=request.data)
+        
+        if login_serializer.is_valid():
+            user_email=login_serializer.data.get('user_email')
+            user_password=login_serializer.data.get('user_password')
+            try:
+                user=BmsUser.objects.get(user_email=user_email, user_password=user_password)
+                token=get_tokens_for_user(user)
+            except BmsUser.DoesNotExist:
+                return Response({"status_code": 401,'error':{'User not Found':'Email or password is not valid'}},status=status.HTTP_201_CREATED)
+            userDetails = BmsUser.objects.get(user_email=user.user_email) # retrieve user by user_id
+            tutorials_serializer = BmsUserDetailsSerializer(userDetails, many=False)
+            return Response({"token":token,"data":"true","status_code": 200,"message": "Login Successfully", "response":tutorials_serializer.data})
+        return Response({"status_code":401,"responce":login_serializer.errors},status=status.HTTP_400_BAD_REQUEST)
+ 
+    
+    
 
 # class LoginView(APIView):
-#     def post(self,request,format=None):
-#         tutorials = Bms_Users.objects.all()
-#         # serializer=BmsUserDetailsSerializer(data=request.data)
-#         serializer = BmsUserDetailsSerializer(tutorials, data=request.data)
-#         # print(serializer)
-#         if serializer.is_valid():
-            
-#         # user_email=request.data
-#         # user_password=request.data
-#         # user=Bms_Users.objects.get(user_email=user_email,user_password=user_password)
-#             # user=authenticate(user_email=user_email,user_password=user_password)
-#         # if serializer.is_valid():    
-#             # if user is not None:
-#                 # token=get_tokens_for_user(user)
-#             return Response({"data":"true","status_code": 200, "message": "Login Successfully", "response":serializer.data})
-#         #     else:
-#         #         return Response({'error':{'non_field_error':['Email or password is not valid' ]}},status=status.HTTP_201_CREATED)
-#         # return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)   
+#     def post(self, request, format=None):
+#         login_serializer=BmsUserDetailsSerializer(data=request.data)
         
-        
-   
-    
-     
+#         if login_serializer.is_valid():
+#             user_email=login_serializer.data.get('user_email')
+#             user_password=login_serializer.data.get('user_password')
+#             try:
+#                 user=BmsUser.objects.get(user_email=user_email, user_password=user_password)
+#             except BmsUser.DoesNotExist:
+#                 return Response({"status_code": 401,'error':{'User not Found':'Email or password is not valid'}},status=status.HTTP_201_CREATED)
+#             userDetails = BmsUser.objects.get(user_email=user.user_email) 
+#             tutorials_serializer = BmsUserDetailsSerializer(userDetails, many=False)
+#             return Response({"data":"true","status_code": 200,"message": "Login Successfully", "response":tutorials_serializer.data})
+#         return Response({"status_code":401,"responce":login_serializer.errors},status=status.HTTP_400_BAD_REQUEST)
+ 
+      
+ # user list crud    
 
 @api_view(['GET', 'POST', 'DELETE'])
+# @authentication_classes([SessionAuthentication, BasicAuthentication])     ## Single Api Authenticate
+# @permission_classes([IsAuthenticated])
 def user_list(request):
     if request.method == 'GET':
         # a=int(input('plese enter the password: '))
-        tutorials = Bms_Users.objects.all()
-        
-        # title = request.GET.get('title', None)
-        # if title is not None:
-        #     tutorials = tutorials.filter(title__icontains=title)
-        
-        tutorials_serializer = BmsUserDetailsSerializer(tutorials, many=True)
-        # return JsonResponse(tutorials_serializer.data, safe=False)
-        return Response({"data":"true","status_code": 200, "message": "Login Successfully", "response":tutorials_serializer.data})
-        # 'safe=False' for objects serialization
+        bms_users = BmsUser.objects.all()        
+        bms_uses_serializer = BmsUserDetailsSerializer(bms_users, many=True)
+        return Response({"data":"true","status_code": 200, "message": "User Lists", "response":bms_uses_serializer.data})
     
  
     elif request.method == 'POST':
-        # tutorial_data = JSONParser().parse(request)
-    
-        # tutorial_serializer = TutorialSerializer(data=request.data)
-        tutorial_serializer = BmsUserDetailsSerializer(data=request.data)
-        if tutorial_serializer.is_valid():
-            # if not Tutorial.objects.filter(published=request.POST['published']).
-        # if tutorial_serializer==abc:
-            tutorial_serializer.save()
-            # print(tutorial_serializer.data)
-            return Response(tutorial_serializer.data, status=status.HTTP_201_CREATED) 
-        return Response(tutorial_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        uses_serializer = BmsUserDetailsSerializer(data=request.data)
+        if uses_serializer.is_valid():
+            user=uses_serializer.save()
+            # token=get_tokens_for_user(user)
+            # return Response(bms_uses_serializer.data, status=status.HTTP_201_CREATED)
+            # return Response({"data":"true","status_code": 200, "message": "User Accounts Create Successfully"})
+            return Response({"data":"true","status_code": 200, "message": "User Added Successfully", "response":uses_serializer.data})
+         
+        return Response({"status_code":401,"responce":uses_serializer.errors},status=status.HTTP_400_BAD_REQUEST)  
     
     elif request.method == 'DELETE':
-        count = Bms_Users.objects.all().delete()
-        return Response({'message': '{} User were deleted successfully!'.format(count[0])}, status=status.HTTP_204_NO_CONTENT)
+        count = BmsUser.objects.all().delete()
+        return Response({'message': '{} User was deleted successfully!'.format(count[0])}, status=status.HTTP_204_NO_CONTENT)
     
     
  
  
 @api_view(['GET', 'PUT', 'DELETE'])
+# @permission_classes([IsAuthenticated])
 def user(request, pk):
     try: 
-        tutorial = Bms_Users.objects.get(pk=pk) 
-    except Bms_Users.DoesNotExist: 
-        return JsonResponse({'message': 'The tutorial does not exist'}, status=status.HTTP_404_NOT_FOUND) 
+        bms_users = BmsUser.objects.get(pk=pk) 
+    except BmsUser.DoesNotExist: 
+        return Response({'message': 'The User does not exist'}, status=status.HTTP_404_NOT_FOUND) 
  
     if request.method == 'GET': 
-        tutorial_serializer = BmsUserDetailsSerializer(tutorial) 
-        return Response(tutorial_serializer.data) 
+        bms_uses_serializer = BmsUserDetailsSerializer(bms_users) 
+        # return Response(bms_uses_serializer.data) 
+        return Response({"data":"true","status_code": 200, "message": "User Get Successfully", "response":bms_uses_serializer.data})
+        
  
-    elif request.method == 'PUT': 
-        # tutorial_data = JSONParser().parse(request) 
-        tutorial_serializer = BmsUserDetailsSerializer(tutorial, data=request.data) 
-        if tutorial_serializer.is_valid(): 
-            tutorial_serializer.save() 
-            return JsonResponse(tutorial_serializer.data) 
-        return JsonResponse(tutorial_serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+    elif request.method == 'PUT':  
+        bms_uses_serializer = BmsUserDetailsSerializer(bms_users, data=request.data) 
+        if bms_uses_serializer.is_valid(): 
+            bms_uses_serializer.save() 
+            # return Response(bms_uses_serializer.data) 
+            return Response({"data":"true","status_code": 200, "message": "User Updated Successfully", "response":bms_uses_serializer.data})
+            
+        return Response({"status_code":401,"responce":bms_uses_serializer.errors},status=status.HTTP_400_BAD_REQUEST)  
  
     elif request.method == 'DELETE': 
-        tutorial.delete() 
+        BmsUser.delete() 
         return Response({'message': 'User was deleted successfully!'}, status=status.HTTP_204_NO_CONTENT)
     
-        
-# @api_view(['GET'])
-# def user_list_published(request):
-#     tutorials = Bms_Users.objects.filter(published=True)
-        
-#     if request.method == 'GET': 
-#         tutorials_serializer = BmsUserDetailsSerializer(tutorials, many=True)
-#         return JsonResponse(tutorials_serializer.data, safe=False)
 
-
+# role crud
 
     
-# Role Table Api crud
-
-# def get_tokens_for_user(user):                      # token generated function
-#     refresh = RefreshToken.for_user(user)
-
-#     return {
-#         'refresh': str(refresh),
-#         'access': str(refresh.access_token),
-#     }
-   
 @api_view(['GET', 'POST', 'DELETE'])
-def role_list(request):
+# @authentication_classes([SessionAuthentication, BasicAuthentication])
+# @permission_classes([IsAuthenticated])
+def role_list(request): 
     if request.method == 'GET':
-        # a=int(input('plese enter the password: '))
-        tutorials = Bms_Roles.objects.all()
-        tutorials_serializer = RoleSerializer(tutorials, many=True)
-        return Response({"data":"true","status_code": 200, "message": "Role lists", "response":tutorials_serializer.data})
-        # 'safe=False' for objects serialization
- 
+        bms_role = BmsRole.objects.all() 
+        bms_role_serializer = RoleSerializer(bms_role, many=True)
+        return Response({"data":"true","status_code": 200, "message": "Role Lists", "response":bms_role_serializer.data})
+        
     elif request.method == 'POST':
-        tutorial_serializer = RoleSerializer(data=request.data)
-        # a = bms_building_master.objects.filter(pk=1).first()
-        # print(a)
-        if tutorial_serializer.is_valid():
-            # for i in data['device_information']:
-            #     a = bms_building_master.objects.filter(pk=i['building_id']).first()
-            #     print(list(a))
-            #     i.update({
-            #     "building_id": str(bms_building_master.objects.filter(pk=i['building_id']).first()),
-            #     "floor_id": str(bms_floor_master.objects.filter(pk=i['floor_id']).first()),
-            #     "area_id": str(bms_area_master.objects.filter(pk=i['area_id']).first()),
-            #     "sub_area_id": str(bms_sub_area_master.objects.filter(pk=i['sub_area_id']).first()),
-            #     })
-            
-            # print(tutorial_serializer)
-            e=tutorial_serializer.save()
-            return Response({"data":"true","status_code": 200, "message": "User role created Successfully!!","response":tutorial_serializer.data})
+        role_serializer = RoleSerializer(data=request.data)
+        if role_serializer.is_valid():
+            user=role_serializer.save()
+            # token=get_tokens_for_user(user)
+            return Response({"data":"true","status_code": 200, "message": "Role Added Successfully!!","response":role_serializer.data})
             # return Response({"data":"true","status_code": 200, "message": "User role created Successfully!!",'token':token, "response":tutorial_serializer.data})
-        return Response(tutorial_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"status_code":401,"responce":role_serializer.errors},status=status.HTTP_400_BAD_REQUEST) 
     
     elif request.method == 'DELETE':
-        count = Bms_Roles.objects.all().delete()
-        return Response({'message': '{} Tutorials were deleted successfully!'.format(count[0])}, status=status.HTTP_204_NO_CONTENT)
+        count = BmsRole.objects.all().delete()
+        return Response({'message': '{} Role deleted successfully!'.format(count[0])}, status=status.HTTP_204_NO_CONTENT)
  
 @api_view(['GET', 'PUT', 'DELETE'])
+# @permission_classes([IsAuthenticated])
 def role_detail(request, pk):
     try: 
-        tutorial = Bms_Roles.objects.get(pk=pk) 
-    except Bms_Roles.DoesNotExist: 
-        # return JsonResponse({'message': 'The User Role does not exist'}, status=status.HTTP_404_NOT_FOUND) 
+        bms_role = BmsRole.objects.get(pk=pk)
+    except BmsRole.DoesNotExist: 
         return Response({'message': 'The User Role does not exist'}, status=status.HTTP_404_NOT_FOUND) 
         
  
     if request.method == 'GET': 
-        tutorial_serializer = RoleSerializer(tutorial) 
-        return Response(tutorial_serializer.data) 
+        bms_role_serializer = RoleSerializer(bms_role) 
+        return Response({"data":"true","status_code": 200, "message": "Role Get Successfully", "response":bms_role_serializer.data}) 
  
     elif request.method == 'PUT': 
-        # tutorial_data = JSONParser().parse(request) 
-        tutorial_serializer = RoleSerializer(tutorial, data=request.data) 
-        if tutorial_serializer.is_valid(): 
-            tutorial_serializer.save() 
-            return Response({"data":"true","status_code": 200, "message": "User Role updated Sucessfuly!!","response":tutorial_serializer.data}) 
-        return Response(tutorial_serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+        bms_role_serializer = RoleSerializer(bms_role, data=request.data) 
+        if bms_role_serializer.is_valid(): 
+            bms_role_serializer.save() 
+            return Response({"data":"true","status_code": 200, "message": "Role Updated Sucessfuly!!","response":bms_role_serializer.data}) 
+        return Response({"status_code":401,"responce":bms_role_serializer.errors},status=status.HTTP_400_BAD_REQUEST)  
  
     elif request.method == 'DELETE': 
-        tutorial.delete() 
-        return Response({'message': 'Role deleted successfully!'}, status=status.HTTP_204_NO_CONTENT)
+        bms_role.delete() 
+        return Response({'message': 'Role was deleted successfully!'}, status=status.HTTP_204_NO_CONTENT)
+    
     
         
-# @api_view(['GET'])
-# def role_list_published(request):
-#     tutorials = Bms_Roles.objects.filter(published=True)    
-    
-#     if request.method == 'GET':
-#         tutorials_serializer = RoleSerializer(tutorials, many=True)
-#         return JsonResponse(tutorials_serializer.data, safe=False)
-    
     
     
 # Bms_Users_Details table crud
 
 @api_view(['GET', 'POST', 'DELETE'])
+# @permission_classes([IsAuthenticated])
 def user_details_list(request):
     if request.method == 'GET':
-        # a=int(input('plese enter the password: '))
-        tutorials = Bms_Users_Details.objects.all()
-        
-        title = request.GET.get('title', None)
-        if title is not None:
-            tutorials = tutorials.filter(title__icontains=title)
-        
-        tutorials_serializer = UserSerializer(tutorials, many=True)
+        user_details = BmsUsersDetail.objects.all()
+        user_details_serializer = BmsUserSerializer(user_details, many=True)
         # return JsonResponse(tutorials_serializer.data, safe=False)
-        return Response({"data":"true","status_code": 200, "message": "User Lists", "response":tutorials_serializer.data})
-        # 'safe=False' for objects serialization
+        return Response({"data":"true","status_code": 200, "message": "User Details Lists", "response":user_details_serializer.data})
  
     elif request.method == 'POST':
-        # tutorial_data = JSONParser().parse(request)
-    
-        # tutorial_serializer = TutorialSerializer(data=request.data)
-        tutorial_serializer = UserSerializer(data=request.data)
-        if tutorial_serializer.is_valid():
-            # if not Tutorial.objects.filter(published=request.POST['published']).
-        # if tutorial_serializer==abc:
-            tutorial_serializer.save()
-            # print(tutorial_serializer.data)
-            return Response({"data":"true","status_code": 200, "message": "User Added Sucessfuly!!","response":tutorial_serializer.data}) 
-        return Response(tutorial_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        details_serializer = BmsUserSerializer(data=request.data)
+        if details_serializer.is_valid():
+            details_serializer.save()
+            return Response({"data":"true","status_code": 200, "message": "User Details Added Sucessfuly!!","response":details_serializer.data}) 
+        return Response({"status_code":401,"responce":details_serializer.errors},status=status.HTTP_400_BAD_REQUEST) 
     
     elif request.method == 'DELETE':
-        count = Bms_Users_Details.objects.all().delete()
-        return Response({"data":"true","status_code": 200, "message": "User Delete Sucessfuly!!",'response': '{} User were deleted successfully!'.format(count[0])}, status=status.HTTP_204_NO_CONTENT)
+        count = BmsUsersDetail.objects.all().delete()
+        return Response({'message': '{} User details was deleted successfully!'.format(count[0])}, status=status.HTTP_204_NO_CONTENT)
  
 @api_view(['GET', 'PUT', 'DELETE'])
+# @permission_classes([IsAuthenticated])
 def user_detail(request, pk):
     try: 
-        tutorial = Bms_Users_Details.objects.get(pk=pk) 
-    except Bms_Users_Details.DoesNotExist: 
-        return Response({'message': 'The User does not exist'}, status=status.HTTP_404_NOT_FOUND)
-        # return JsonResponse({'message': 'The tutorial does not exist'}, status=status.HTTP_404_NOT_FOUND) 
+        user_details = BmsUsersDetail.objects.get(pk=pk) 
+    except BmsUsersDetail.DoesNotExist: 
+        return Response({'message': 'The User details does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        # return JsonResponse({'message': 'The User details does not exist'}, status=status.HTTP_404_NOT_FOUND) 
          
  
     if request.method == 'GET': 
-        tutorial_serializer = UserSerializer(tutorial) 
-        return Response(tutorial_serializer.data) 
+        user_details_serializer =BmsUserSerializer(user_details) 
+        return Response({"data":"true","status_code": 200, "message": "Get Data Successfully", "response":user_details_serializer.data}) 
  
     elif request.method == 'PUT': 
-        # tutorial_data = JSONParser().parse(request) 
-        tutorial_serializer = UserSerializer(tutorial, data=request.data) 
-        if tutorial_serializer.is_valid(): 
-            tutorial_serializer.save() 
-            return Response({"data":"true","status_code": 200, "message": "User details updated Sucessfuly!!","response":tutorial_serializer.data}) 
-        # return JsonResponse(tutorial_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(tutorial_serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+        user_details_serializer = BmsUserSerializer(user_details, data=request.data) 
+        if user_details_serializer.is_valid(): 
+            user_details_serializer.save() 
+            return Response({"data":"true","status_code": 200, "message": "User details updated Sucessfuly!!","response":user_details_serializer.data})
+        return Response({"status_code":401,"responce":user_details_serializer.errors},status=status.HTTP_400_BAD_REQUEST) 
          
  
     elif request.method == 'DELETE': 
-        tutorial.delete() 
-        return Response({"data":"true","status_code": 200, "response": "User Delete Sucessfuly!!"})   
+        user_details.delete() 
+        return Response({'message': 'User details deleted successfully!'}, status=status.HTTP_204_NO_CONTENT)
     
     
     
 # Bms_Module crud
 
-
-
 @api_view(['GET', 'POST', 'DELETE'])
+# @permission_classes([IsAuthenticated])
 def module_list(request):
     if request.method == 'GET':
-        # a=int(input('plese enter the password: '))
-        tutorials = Bms_Module_master.objects.all()
-        
-        title = request.GET.get('title', None)
-        if title is not None:
-            tutorials = tutorials.filter(title__icontains=title)
-        
-        tutorials_serializer = ModuleSerializer(tutorials, many=True)
-        # return JsonResponse(tutorials_serializer.data, safe=False)
-        return Response({"data":"true","status_code": 200, "message": "module Lists", "response":tutorials_serializer.data})
-        # 'safe=False' for objects serialization
+        bms_module = BmsModuleMaster.objects.all()        
+        bms_module_serializer = ModuleSerializer(bms_module, many=True)
+        return Response({"data":"true","status_code": 200, "message": "Module Lists", "response":bms_module_serializer.data})
+    
  
     elif request.method == 'POST':
-        # tutorial_data = JSONParser().parse(request)
-    
-        # tutorial_serializer = TutorialSerializer(data=request.data)
-        tutorial_serializer = ModuleSerializer(data=request.data)
-        if tutorial_serializer.is_valid():
-            # if not Tutorial.objects.filter(published=request.POST['published']).
-        # if tutorial_serializer==abc:
-            tutorial_serializer.save()
-            # print(tutorial_serializer.data)
-            return Response({"data":"true","status_code": 200, "message": "Module Added Sucessfuly!!","response":tutorial_serializer.data}) 
-        return Response(tutorial_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        module_serializer = ModuleSerializer(data=request.data)
+        if module_serializer.is_valid():
+            module_serializer.save()
+            return Response({"data":"true","status_code": 200, "message": "Module Added Sucessfuly!!","response":module_serializer.data}) 
+        return Response({"status_code":401,"responce":module_serializer.errors},status=status.HTTP_400_BAD_REQUEST) 
     
     elif request.method == 'DELETE':
-        count = Bms_Module_master.objects.all().delete()
-        return Response({'message': '{} User were deleted successfully!'.format(count[0])}, status=status.HTTP_204_NO_CONTENT)
+        count = BmsModuleMaster.objects.all().delete()
+        return Response({'message': '{} Module was deleted successfully!'.format(count[0])}, status=status.HTTP_204_NO_CONTENT)
+    
+    
  
 @api_view(['GET', 'PUT', 'DELETE'])
+# @permission_classes([IsAuthenticated])
 def module_detail(request, pk):
     try: 
-        tutorial = Bms_Module_master.objects.get(pk=pk) 
-    except Bms_Module_master.DoesNotExist: 
-        return Response({'message': 'The Module does not exist'}, status=status.HTTP_404_NOT_FOUND)
-        # return JsonResponse({'message': 'The tutorial does not exist'}, status=status.HTTP_404_NOT_FOUND) 
+        bms_module = BmsModuleMaster.objects.get(pk=pk) 
+    except BmsModuleMaster.DoesNotExist: 
+        return Response({'message': 'The Module does not exist'}, status=status.HTTP_404_NOT_FOUND) 
          
  
     if request.method == 'GET': 
-        tutorial_serializer = ModuleSerializer(tutorial) 
-        return Response(tutorial_serializer.data) 
+        module_serializer = ModuleSerializer(bms_module) 
+        return Response({"data":"true","status_code": 200, "message": "Role Get Successfully", "response":module_serializer.data})  
  
     elif request.method == 'PUT': 
-        # tutorial_data = JSONParser().parse(request) 
-        tutorial_serializer = ModuleSerializer(tutorial, data=request.data) 
-        if tutorial_serializer.is_valid(): 
-            tutorial_serializer.save() 
-            return Response({"data":"true","status_code": 200, "message": "Module updated Sucessfuly!!","response":tutorial_serializer.data}) 
-        # return JsonResponse(tutorial_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(tutorial_serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+        module_serializer = ModuleSerializer(bms_module, data=request.data) 
+        if module_serializer.is_valid(): 
+            module_serializer.save() 
+            return Response({"data":"true","status_code": 200, "message": "Module updated Sucessfuly!!","response":module_serializer.data}) 
+        return Response({"status_code":401,"responce":module_serializer.errors},status=status.HTTP_400_BAD_REQUEST)  
          
  
     elif request.method == 'DELETE': 
-        tutorial.delete() 
+        bms_module.delete() 
         return Response({'message': 'Module was deleted successfully!'}, status=status.HTTP_204_NO_CONTENT)
+    
+    
+ # role_device_informations_list crud   
 
+@api_view(['GET', 'POST', 'DELETE'])
+# @permission_classes([IsAuthenticated])
+def role_device_information_list(request):
+    if request.method == 'GET':
+        bms_module = BmsRolesDevicesInformation.objects.all()        
+        bms_module_serializer = RolesDeviceInformationSerializer(bms_module, many=True)
+        return Response({"data":"true","status_code": 200, "message": "Role Device Information Lists", "response":bms_module_serializer.data})
+    
+ 
+    elif request.method == 'POST':
+        module_serializer = RolesDeviceInformationSerializerPost(data=request.data)
+        if module_serializer.is_valid():
+            module_serializer.save()
+            return Response({"data":"true","status_code": 200, "message": "Role Device Information Added Sucessfuly!!","response":module_serializer.data}) 
+        return Response({"status_code":401,"responce":module_serializer.errors},status=status.HTTP_400_BAD_REQUEST) 
+    
+    
+    # elif request.method == 'POST':
+       
+    #     data = request.data
+    #     sub_area_ids = data['subarea_id']
+    #     # print(Floor_ids)
+    #     for sub_area in sub_area_ids:
+    #         area = dict(data)
+    #         area.update({'subarea_id': sub_area})
+    #         # print(area)    
+    #         serializer = RolesDeviceInformationSerializerPost(data=area)
+    #         if serializer.is_valid():
+    #             serializer.save()
+    #         else:
+    #             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-
-# def index(request):
-#     if request.method == 'POST':
-#         input_text = request.POST.get('input-text')
-#         print(input_text)
-#         url = "http://tracker.bi-team.in/api/index.php"
-#         headers = {'Content-type': 'application/json', 'Accept': '*/*','Connection':'keep-alive','Accept-Encoding':'gzip, deflate, br','User-Agent':'PostmanRuntime/7.32.2',"Access-Control-Allow-Origin":''}
-#         get_auth_token = {
-#         "user_id":'2',
-#         "license_key":str(input_text),
-#         "mac_address": str(macaddr),
-#         "ip_address":str(ip.get()),
-#         "action":'add_license_information'
-#         }
-#         t = requests.post(url, json=get_auth_token ,headers = headers)
-#         res = json.loads(t.text)
-#         res['status']
-#         # Do something with the input_text value
-#     return render(request, 'index.html')
+    #     return Response({'data': 'true', 'status_code': 200, 'message': 'Data added successfully'})  
         
+    
+    elif request.method == 'DELETE':
+        count = BmsRolesDevicesInformation.objects.all().delete()
+        return Response({'message': '{} Module was deleted successfully!'.format(count[0])}, status=status.HTTP_204_NO_CONTENT)
+    
+    
+ 
+@api_view(['GET', 'PUT', 'DELETE'])
+# @permission_classes([IsAuthenticated])
+def role_device_information_details(request, pk):
+    try:
+        # bms_roles_device_information
+        bms_module = BmsRolesDevicesInformation.objects.get(pk=pk) 
+    except BmsModuleMaster.DoesNotExist: 
+        return Response({'message': 'Role Device Information does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        # return JsonResponse({'message': 'Role Device Information does not exist'}, status=status.HTTP_404_NOT_FOUND) 
+         
+ 
+    if request.method == 'GET': 
+        module_serializer = RolesDeviceInformationSerializer(bms_module) 
+        return Response({"data":"true","status_code": 200, "message": "Role Get Successfully", "response":module_serializer.data}) 
+ 
+    elif request.method == 'PUT': 
+        module_serializer = RolesDeviceInformationSerializer(bms_module, data=request.data) 
+        if module_serializer.is_valid(): 
+            module_serializer.save() 
+            return Response({"data":"true","status_code": 200, "message": "Role Device Information updated Sucessfuly!!","response":module_serializer.data}) 
+        return Response({"status_code":401,"responce":module_serializer.errors},status=status.HTTP_400_BAD_REQUEST)  
+         
+ 
+    elif request.method == 'DELETE': 
+        bms_module.delete() 
+        return Response({"message": "Role Device Information  deleted successfully!"}, status=status.HTTP_204_NO_CONTENT)
 
+
+
+    

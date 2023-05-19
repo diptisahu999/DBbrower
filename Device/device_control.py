@@ -1,22 +1,27 @@
 import json
 from BMS.relay import RelayKeys
-from Device.models import bms_device_information
 from Device.device_status import getDeviceStatus
-import six,binascii,logging
+import six
+import binascii
+import logging
 from struct import pack
 from socket import *
-
+from BMS import urls
+from Device.AC_panel_control import pannel_ac_control
+from Device.curtain_opr import curtain_relay_opr
 # TIS CIRCUIT CONFIG
 
 
-s=socket(AF_INET, SOCK_DGRAM)
-s.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
-m=socket(AF_INET, SOCK_DGRAM)
-m.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-m.bind(('0.0.0.0', 6000))
+# s=socket(AF_INET, SOCK_DGRAM)
+# s.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
+# m=socket(AF_INET, SOCK_DGRAM)
+# m.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+# m.bind(('0.0.0.0', 6000))
 
 
 rc = RelayKeys()
+
+
 def crc16_ccitt(data, crc=0):
     CRC16_CCITT_TAB = \
         [
@@ -61,9 +66,11 @@ def crc16_ccitt(data, crc=0):
         crc = (((crc << 8) & 0xFFFF) ^ tab[index])
     return crc & 0xffff
 
+
 def relay_opr(param):
-    print(param,"-->")
-    logging.info("Sending Operation on " + str(param['device_id']) + " on channel id " + str(param['channel_id']) + " Operation " + str(param['device_status']) + "------- Sending")
+    print(param, "-->")
+    logging.info("Sending Operation on " + str(param['device_id']) + " on channel id " + str(
+        param['channel_id']) + " Operation " + str(param['device_status']) + "------- Sending")
     y = hex(int(param['channel_id']))
     # print(y)
     if int(param['channel_id']) < 16:
@@ -75,19 +82,16 @@ def relay_opr(param):
     channel_id = binascii.a2b_hex(m.encode('utf-8'))
     # print(channel_id)
     deviceid_hex = hex(int(param['device_id']))
-    print(deviceid_hex,"--")        
+    print(deviceid_hex, "--")
     if int(param['device_id']) < 16:
         deviceid_replaced = deviceid_hex.replace('0x', '0')
     else:
         deviceid_replaced = deviceid_hex.replace('0x', '')
-    
+
     device_id = binascii.a2b_hex(deviceid_replaced.encode('utf-8'))
     print(device_id)
     operation = param['device_status']
 
-
-
-    
     if operation != None:
         if operation == 'true':
             # print("operation: ",operation)
@@ -112,9 +116,9 @@ def relay_opr(param):
             opr = pack('B', int(operation))
             # print("operation: ",operation)
             delay = b'\x00\x00'
-
             
-        get = crc16_ccitt(rc.OPERATION + device_id + channel_id + opr + delay, crc=0)
+        get = crc16_ccitt(rc.OPERATION + device_id +
+                          channel_id + opr + delay, crc=0)
         # print(get,"get")
         crc_int = hex(get)[2:]
         if len(crc_int) == 3:
@@ -122,41 +126,99 @@ def relay_opr(param):
         if len(crc_int) == 2:
             crc_int = '00' + crc_int
 
-        sm = r"\x" + r"\x".join(crc_int[n : n+2] for n in range(0, len(crc_int), 2))
+        sm = r"\x" + r"\x".join(crc_int[n: n+2]
+                                for n in range(0, len(crc_int), 2))
         a = sm.replace('\\x', '')
         a.encode('utf8')
 
         x = binascii.a2b_hex(a.encode('utf8'))
         # print(rc.HEADER,rc.OPERATION,device_id,channel_id,opr,rc.TRAIL,x)
-        udp_pack_new = rc.HEADER + rc.OPERATION + device_id + channel_id + opr + rc.TRAIL + x
-        
-        
+        udp_pack_new = rc.HEADER + rc.OPERATION + \
+            device_id + channel_id + opr + rc.TRAIL + x
+
         # print(udp_pack_new,"--u pack")
-        s.sendto(udp_pack_new, ('255.255.255.255',6000))
+        urls.s.sendto(udp_pack_new, ('255.255.255.255', 6000))
+
 
 def client_main_config():
-        try:
-            d_list = json.loads(getDeviceStatus())
-            print(d_list)
-            for i in d_list:
-                if i['device_status'] =="true":
-                    param={"device_id":int(i.get('device_id')),
-                            "channel_id":int(i.get('channel_id')),
-                            "device_status":str(i.get("device_status")),
-                            "delay_second":10,
-                            }
+    try:
+        d_list = json.loads(getDeviceStatus())
+        for i in d_list:
+            if i["device_type"] == "LED":
+                if i['device_status'] == "true":
+                    param = {"device_id": int(i.get('device_id')),
+                             "channel_id": int(i.get('channel_id')),
+                             "device_status": str(i.get("device_status")),
+                             # "delay_second":10,
+                             }
                     relay_opr(param)
-                elif i['device_status'] =="false":
-                    param={"device_id":int(i.get('device_id')),
-                            "channel_id":int(i.get('channel_id')),
-                            "device_status":str(i.get("device_status"))}
+                elif i['device_status'] == "false":
+                    param = {"device_id": int(i.get('device_id')),
+                             "channel_id": int(i.get('channel_id')),
+                             "device_status": str(i.get("device_status"))}
                     relay_opr(param)
                 else:
-                    param={"device_id":int(i.get('device_id')),
-                            "channel_id":int(i.get('channel_id')),
-                            "device_status":str(i.get("device_status"))}
+                    param = {"device_id": int(i.get('device_id')),
+                             "channel_id": int(i.get('channel_id')),
+                             "device_status": str(i.get("device_status"))}
                     relay_opr(param)
-                
-                
-        except:
-            print("Error in Devices/device_control.py")
+            print("I Am LED")
+
+            if i["device_type"] == "AC":
+                if i['device_status'] == "true":
+                    param = {"device_id": str(i['device_id']),
+                         "channel_id": str(i['channel_id']),
+                         "ac_temp": str(i['ac_temp']),
+                         "rm_temp": str(i['rm_temp']),
+                         "mode": str(i['mode']),  
+                         "swing": str(i['swing']),
+                         "fspeed": str(i['fspeed']),
+                         "device_status":str(i['device_status'])}
+                  
+                    pannel_ac_control(dict(param))
+                elif i['device_status'] == "false":
+                    param = {"device_id": str(i['device_id']),
+                         "channel_id": str(i['channel_id']),
+                         "ac_temp": str(i['ac_temp']),
+                         "rm_temp": str(i['rm_temp']),
+                         "mode": str(i['mode']),
+                         "swing": str(i['swing']),
+                         "fspeed": str(i['fspeed']),
+                         "device_status":str(i['device_status'])}
+                    pannel_ac_control(dict(param))
+                print("I am AC")
+            if i["device_type"]=="CURTAIN":
+                if i['opr']=='curtain_opr_o':
+                # if i['device_status']=='false':
+                    param={
+                            "device_id":str(i['device_id']),
+                            "channel_open":str(i['channel_open']),
+                            "device_status":str(i['device_status']),
+                            "opr":str(['opr'])
+                        }
+                    curtain_relay_opr(dict(param), 'curtain_opr_o')
+                        
+                # elif i['device_status']=='false':
+                elif i['opr']=='curtain_opr_c':
+                    param={
+                            "device_id":str(i['device_id']),
+                            "channel_close":str(i['channel_close']),
+                            "device_status":str(i['device_status']),
+                            "opr":str(i['opr'])
+                        }
+                    curtain_relay_opr(dict(param), 'curtain_opr_c')
+                        
+                # elif i['device_status']=='false':
+                elif i['opr']=='curtain_opr_s':
+                    param={
+                            "device_id":str(i['device_id']),
+                            "channel_open":str(i['channel_open']),
+                            "channel_close":str(i['channel_close']),
+                            "device_status":str(i['device_status']),
+                            "opr":str(i['opr'])
+                        }
+                    curtain_relay_opr(dict(param), 'curtain_opr_s')
+                         
+            print("Curtain")
+    except:
+        print("Error in Devices/device_control.py")
