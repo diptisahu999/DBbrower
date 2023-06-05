@@ -9,8 +9,13 @@ class BmsBuildingMaster(models.Model):
         ("Active", "Active"),
         ("In-Active", "In-Active"),
     ]
+    DELETE=[
+        ("NO","NO"),
+        ("YES","YES")
+    ]
     tower_name = models.CharField(max_length=100)
     status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
+    is_deleted=models.CharField(max_length=23,choices=DELETE,default=DELETE[0][0])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -26,9 +31,15 @@ class BmsFloorMaster(models.Model):
         ("Active", "Active"),
         ("In-Active", "In-Active"),
     ]
+    
+    DELETE=[
+        ("NO","NO"),
+        ("YES","YES")
+    ]
     tower_data = models.ForeignKey(BmsBuildingMaster,on_delete=models.CASCADE,related_name='floor_data',null=True,blank=True)   ## changeses
     floor_name = models.CharField(max_length=100)
     status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
+    is_deleted=models.CharField(max_length=23,choices=DELETE,default=DELETE[0][0])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -44,9 +55,15 @@ class BmsAreaMaster(models.Model):
         ("Active", "Active"),
         ("In-Active", "In-Active"),
     ]
+    
+    DELETE=[
+        ("NO","NO"),
+        ("YES","YES")
+    ]
     area_name = models.CharField(max_length=100)
     floor_data = models.ForeignKey(BmsFloorMaster,on_delete=models.CASCADE,related_name='areas_data',null=True,blank=True)
     status = models.CharField(max_length=100, choices=STATUS,default=STATUS[0][0])
+    is_deleted=models.CharField(max_length=23,choices=DELETE,default=DELETE[0][0])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -122,6 +139,10 @@ class BmsSubAreaMaster(models.Model):
         ("Active", "Active"),
         ("In-Active", "In-Active"),
     ]
+    DELETE=[
+        ("NO","NO"),
+        ("YES","YES")
+    ]
     # floor_id=models.ForeignKey(bms_floor_master,on_delete=models.CASCADE)
     # tower_details=models.ForeignKey(bms_building_master,on_delete=models.CASCADE)
     sub_area_name = models.CharField(max_length=100)
@@ -133,6 +154,7 @@ class BmsSubAreaMaster(models.Model):
     seating_capacity = models.BigIntegerField()
     devices_details = models.ManyToManyField(BmsDeviceInformation,limit_choices_to={'is_used': 'No'},blank=True)
     status = models.CharField(max_length=100, choices=STATUS,default=STATUS[0][0])
+    is_deleted=models.CharField(max_length=23,choices=DELETE,default=DELETE[0][0])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -345,6 +367,12 @@ class BmsScenes(models.Model):
         ("ON", "ON"),
         ("OFF", "OFF"),
     ]
+    DELETE=[
+        ("NO","NO"),
+        ("YES","YES")
+    ]
+    
+    is_deleted=models.CharField(max_length=23,choices=DELETE,default=DELETE[0][0])
     scene_name =models.CharField(max_length=100, blank=True)
     devices_details = models.ManyToManyField(BmsDeviceInformation,blank=True)
     operation_type =models.CharField(max_length=100, blank=True, choices=OPERATION)
@@ -367,6 +395,12 @@ class BmsTriggers(models.Model):
         ("Event", "Event"),
         ("Schedule", "Schedule"),
     ]
+    DELETE=[
+        ("NO","NO"),
+        ("YES","YES")
+    ]
+    
+    is_deleted=models.CharField(max_length=23,choices=DELETE,default=DELETE[0][0])
     scene_details = models.ForeignKey(BmsScenes,on_delete=models.CASCADE,null=True)
     trigger_name = models.CharField(max_length=100, blank=True)
     action_type = models.CharField(max_length=100, choices=action_type_choice,blank=True)
