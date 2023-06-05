@@ -2213,6 +2213,7 @@ def UserTypeList(request):
     if request.method == 'GET':
         bms_users = BmsUserType.objects.all()
         bms_users_serializer = BmsUserTypeSerializer(bms_users, many=True)
+<<<<<<< Updated upstream
         return Response({"data": "true", "status_code": 200, "message": "User Type Lists", "response": bms_users_serializer.data}, status=status.HTTP_200_OK)
     
 
@@ -2228,4 +2229,7 @@ def get_device(request):
         bms_users = BmsDeviceInformation.objects.filter(device_type=device_type,is_used=is_used,status =device_status)
         bms_users_serializer = BmsDeviceInformationSerializer(bms_users, many=True)
         return Response({"data": "true", "status_code": 200, "message": "Device Lists", "response": bms_users_serializer.data}, status=status.HTTP_200_OK)
+>>>>>>> Stashed changes
+=======
+        return Response({"data": "true", "status_code": 200, "message": "User Type Lists", "response": bms_users_serializer.data}, status=status.HTTP_200_OK)
 >>>>>>> Stashed changes

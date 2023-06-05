@@ -440,5 +440,9 @@ class BmsUserSerializerUser(serializers.ModelSerializer):
 class BmsUserTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = BmsUserType
+<<<<<<< Updated upstream
+        fields = '__all__'
+>>>>>>> Stashed changes
+=======
         fields = '__all__'
 >>>>>>> Stashed changes

@@ -1,35 +1,16 @@
-# a={"abc":"name",1:"djkhskjd",0:"sjhdjdhjds"}
-# for i,j in a.items():
-#    print(i,":",j)
-   
-   
-# name=['raj',"dev","ranjan",'sahu']
-# age=[34,23,33,22]
-# cla=['A','B','C','D']
-
-
-# n=len(name)
-
-# for i in range(n):
-#     na=name[i]
-#     ag=age[i]
-#     cl=cla[i]
-#     print(na,"age is",ag,"and class is",cl)
-
-
-
-
-# for na,ag,cl in zip(name,age,cla):
-#     print(na,ag,cl)
-
-
-
-my_list=[]
-
-my_list.append(12)
-my_list.append(34)
-my_list.append(45)
-my_list.append(56)
-my_list.append(86)
-
-print(my_list)
+user_detail_data = {
+  "user_data": 11,
+  "first_name": "rahul",
+  "last_name": "pandav",
+  "phone_no": "8975643232",
+  "dob": "2023-05-18",
+  "wallet_balance": "12321",
+  "has_vehicle": "YES",
+  "locker_data": 3,
+  "address": None,
+  "id_proof": None,
+  "visiting_card": None,
+  "is_deleted": None
+}
+user_detail_data = {k: v for k, v in user_detail_data.items() if v is not None}
+print(user_detail_data)
