@@ -86,3 +86,19 @@ class Bms_user_area_cards_list_admin(admin.ModelAdmin):
                     'user_card_name',
                     'created_at',
                     'status']
+    
+
+@admin.register(BmsScenes)
+class SencesAdmin(admin.ModelAdmin):
+    list_display=[
+        'scene_name',
+        'operation_type',
+        'status','created_at'
+    ]
+    
+    
+@admin.register(BmsTriggers)
+class TriggersAdmin(admin.ModelAdmin):
+    list_display=[
+        'scene_details','trigger_name','action_type','trigger_data'
+    ]

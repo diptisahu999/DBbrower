@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
-import threading
+import threading ,time
 from socket import *
 # import socket
 import requests
@@ -9,6 +9,8 @@ from Authenticate import views
 import public_ip as ip
 from django.shortcuts import render
 from getmac import get_mac_address as gma
+from Device.device_status import getUserAreaCardList
+# getUserAreaCardList
 
 try:
     s = socket(AF_INET,SOCK_DGRAM)
@@ -42,10 +44,23 @@ urlpatterns = [
     # path('',include('Inventory.urls')),
     path('', include('Camera.urls')),
 ]
+# def get_user_area_card_list_thread():
+#     while True:
+#         user_id = 3
+#         getUserAreaCardList(user_id)
+#         time.sleep(1)
 
+# status = threading.Thread(target=get_user_area_card_list_thread)
+# status.start()
+# while True:
+#     # Wait for 1 second
+#     time.sleep(1)
 
-
-
+#     # Check if the thread is still alive
+#     if not status.is_alive():
+#         # If the thread has completed, start it again
+#         status = threading.Thread(target=get_user_area_card_list_thread)
+#         status.start()
 
 # print(myip)
 # def index(request):

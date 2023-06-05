@@ -27,7 +27,7 @@ class ModuleAdmin(admin.ModelAdmin):
 
 @admin.register(BmsUsersDetail)
 class ModuleAdmin(admin.ModelAdmin):
-    list_display=['id','first_name','phone_no','birthday','address','created_user_details_date','updated_user_details_date']
+    list_display=['id','first_name','phone_no','dob','address','created_user_details_date','updated_user_details_date']
     
     
     

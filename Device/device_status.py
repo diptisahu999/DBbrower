@@ -1,5 +1,6 @@
-from Device.models import BmsDeviceInformation
+from Device.models import BmsDeviceInformation,BmsUserAreaCardsList
 import json
+from django.core import serializers
 # from channels.consumer import SyncConsumer , AsyncConsumer
 # 
 d_list = []
@@ -48,3 +49,39 @@ def getDeviceStatus():
             d_list.append(dump)
     Device_list = json.dumps(d_list)
     return Device_list
+# user_data__id=user_id
+
+def getUserAreaCardList(user_id):
+    # data = BmsUserAreaCardsList.objects.filter()
+    user_id=3
+    data = BmsUserAreaCardsList.objects.filter(user_data__id=user_id)
+    serialized_data = []
+    
+    for item in data:
+        serialized_item = {
+            "id": item.id,
+            "user_data_id": item.user_data_id,
+            "card_id": item.card_id,
+            "column_no": item.column_no,
+            "user_card_name": item.user_card_name,
+            "card_title": item.card_title,
+            "card_slug": item.card_slug,
+            "status": item.status,
+            "device_details": []
+        }
+        
+        # Retrieve and add device_details to the serialized item
+        devices = item.device_details.all()
+        for device in devices:
+            serialized_device = {
+                "id": device.id,
+                "device_name": device.device_name,
+                "device_type":device.device_type,
+                "device_informations": device.device_informations
+                # Add other fields you want to include
+            }
+            serialized_item['device_details'].append(serialized_device)
+        
+        serialized_data.append(serialized_item)
+    user_card_listing =(json.dumps(serialized_data))
+    return user_card_listing

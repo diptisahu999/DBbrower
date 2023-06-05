@@ -70,7 +70,8 @@ class BmsDeviceInformation(models.Model):
                    ("BRP","BRP"),
                    ("STB","STB"),
                    ("CAMERA","CAMERA"),
-                   ]
+                   ("SPEAKER","SPEAKER")
+                    ]
 
     is_used_STATUS = [
         ("Yes", "Yes"),
@@ -130,7 +131,7 @@ class BmsSubAreaMaster(models.Model):
     width = models.CharField(max_length=100, blank=True)
     height = models.CharField(max_length=100, blank=True)
     seating_capacity = models.BigIntegerField()
-    devices_details = models.ManyToManyField(BmsDeviceInformation,limit_choices_to={'is_used': 'no'})
+    devices_details = models.ManyToManyField(BmsDeviceInformation,limit_choices_to={'is_used': 'No'},blank=True)
     status = models.CharField(max_length=100, choices=STATUS,default=STATUS[0][0])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
@@ -259,7 +260,6 @@ class BmsHardwareTypeMaster(models.Model):
     class Meta():
         db_table = 'bms_hardware_type_master'
 
-
 class BmsDeviceTypeMaster(models.Model):
     device_slug = [("LED","LED"),
                    ("AC","AC"),
@@ -271,6 +271,7 @@ class BmsDeviceTypeMaster(models.Model):
                    ("BRP","BRP"),
                    ("STB","STB"),
                    ("CAMERA","CAMERA"),
+                   ("SPEAKER","SPEAKER")
                    ]
     
     
@@ -314,8 +315,10 @@ class BmsUserAreaCardsList(models.Model):
     ]
     user_data = models.ForeignKey(to='Authenticate.BmsUser',on_delete=models.CASCADE)
     card_id = models.IntegerField()
+    column_no = models.IntegerField(default=1)
     user_card_name = models.CharField(max_length=100, blank=True)
-    devices_details = models.ManyToManyField(BmsDeviceInformation,blank=True)
+    card_title = models.CharField(max_length=100, blank=True)
+    device_details = models.ManyToManyField(BmsDeviceInformation,blank=True)
     card_slug = models.CharField(max_length=100, blank=True)
     status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
     created_at = models.DateTimeField(default=timezone.now)
@@ -326,4 +329,54 @@ class BmsUserAreaCardsList(models.Model):
         return self.user_card_name
 
     class Meta():
-        db_table = 'bms_user_area_cards List'
+        db_table = 'bms_user_area_cards_list'
+
+
+
+
+
+class BmsScenes(models.Model):
+    STATUS = [
+        ("Active", "Active"),
+        ("In-Active", "In-Active"),
+    ]
+    
+    OPERATION=[
+        ("ON", "ON"),
+        ("OFF", "OFF"),
+    ]
+    scene_name =models.CharField(max_length=100, blank=True)
+    devices_details = models.ManyToManyField(BmsDeviceInformation,blank=True)
+    operation_type =models.CharField(max_length=100, blank=True, choices=OPERATION)
+    status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.scene_name
+
+    class Meta():
+        db_table = 'bms_scenes'
+
+class BmsTriggers(models.Model):
+    STATUS = [
+        ("Active", "Active"),
+        ("In-Active", "In-Active"),
+    ]
+    action_type_choice = [
+        ("Event", "Event"),
+        ("Schedule", "Schedule"),
+    ]
+    scene_details = models.ForeignKey(BmsScenes,on_delete=models.CASCADE,null=True)
+    trigger_name = models.CharField(max_length=100, blank=True)
+    action_type = models.CharField(max_length=100, choices=action_type_choice,blank=True)
+    trigger_data =models.CharField(max_length=999, blank=True)
+    status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.trigger_name
+
+    class Meta():
+        db_table = 'bms_triggers'

@@ -10,7 +10,9 @@ from BMS import urls
 from Device.AC_panel_control import pannel_ac_control
 from Device.curtain_opr import curtain_relay_opr
 # TIS CIRCUIT CONFIG
-
+from Device.serializers import *
+from Device.models import *
+from Device.device_status import getUserAreaCardList
 
 # s=socket(AF_INET, SOCK_DGRAM)
 # s.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
@@ -140,85 +142,180 @@ def relay_opr(param):
         urls.s.sendto(udp_pack_new, ('255.255.255.255', 6000))
 
 
-def client_main_config():
-    try:
-        d_list = json.loads(getDeviceStatus())
-        for i in d_list:
-            if i["device_type"] == "LED":
-                if i['device_status'] == "true":
-                    param = {"device_id": int(i.get('device_id')),
-                             "channel_id": int(i.get('channel_id')),
-                             "device_status": str(i.get("device_status")),
-                             # "delay_second":10,
-                             }
-                    relay_opr(param)
-                elif i['device_status'] == "false":
-                    param = {"device_id": int(i.get('device_id')),
-                             "channel_id": int(i.get('channel_id')),
-                             "device_status": str(i.get("device_status"))}
-                    relay_opr(param)
-                else:
-                    param = {"device_id": int(i.get('device_id')),
-                             "channel_id": int(i.get('channel_id')),
-                             "device_status": str(i.get("device_status"))}
-                    relay_opr(param)
-            print("I Am LED")
+# def client_main_config():
+#     try:
+#         d_list = json.loads(getDeviceStatus())
+#         for i in d_list:
+#             if i["device_type"] == "LED":
+#                 if i['device_status'] == "true":
+#                     param = {"device_id": int(i.get('device_id')),
+#                              "channel_id": int(i.get('channel_id')),
+#                              "device_status": str(i.get("device_status")),
+#                              # "delay_second":10,
+#                              }
+#                     relay_opr(param)
+#                 elif i['device_status'] == "false":
+#                     param = {"device_id": int(i.get('device_id')),
+#                              "channel_id": int(i.get('channel_id')),
+#                              "device_status": str(i.get("device_status"))}
+#                     relay_opr(param)
+#                 else:
+#                     param = {"device_id": int(i.get('device_id')),
+#                              "channel_id": int(i.get('channel_id')),
+#                              "device_status": str(i.get("device_status"))}
+#                     relay_opr(param)
+#             print("I Am LED")
 
-            if i["device_type"] == "AC":
-                if i['device_status'] == "true":
-                    param = {"device_id": str(i['device_id']),
-                         "channel_id": str(i['channel_id']),
-                         "ac_temp": str(i['ac_temp']),
-                         "rm_temp": str(i['rm_temp']),
-                         "mode": str(i['mode']),  
-                         "swing": str(i['swing']),
-                         "fspeed": str(i['fspeed']),
-                         "device_status":str(i['device_status'])}
+#             if i["device_type"] == "AC":
+#                 if i['device_status'] == "true":
+#                     param = {"device_id": str(i['device_id']),
+#                          "channel_id": str(i['channel_id']),
+#                          "ac_temp": str(i['ac_temp']),
+#                          "rm_temp": str(i['rm_temp']),
+#                          "mode": str(i['mode']),  
+#                          "swing": str(i['swing']),
+#                          "fspeed": str(i['fspeed']),
+#                          "device_status":str(i['device_status'])}
                   
-                    pannel_ac_control(dict(param))
-                elif i['device_status'] == "false":
-                    param = {"device_id": str(i['device_id']),
-                         "channel_id": str(i['channel_id']),
-                         "ac_temp": str(i['ac_temp']),
-                         "rm_temp": str(i['rm_temp']),
-                         "mode": str(i['mode']),
-                         "swing": str(i['swing']),
-                         "fspeed": str(i['fspeed']),
-                         "device_status":str(i['device_status'])}
-                    pannel_ac_control(dict(param))
-                print("I am AC")
-            if i["device_type"]=="CURTAIN":
-                if i['opr']=='curtain_opr_o':
-                # if i['device_status']=='false':
-                    param={
-                            "device_id":str(i['device_id']),
-                            "channel_open":str(i['channel_open']),
-                            "device_status":str(i['device_status']),
-                            "opr":str(['opr'])
-                        }
-                    curtain_relay_opr(dict(param), 'curtain_opr_o')
+#                     pannel_ac_control(dict(param))
+#                 elif i['device_status'] == "false":
+#                     param = {"device_id": str(i['device_id']),
+#                          "channel_id": str(i['channel_id']),
+#                          "ac_temp": str(i['ac_temp']),
+#                          "rm_temp": str(i['rm_temp']),
+#                          "mode": str(i['mode']),
+#                          "swing": str(i['swing']),
+#                          "fspeed": str(i['fspeed']),
+#                          "device_status":str(i['device_status'])}
+#                     pannel_ac_control(dict(param))
+#                 print("I am AC")
+#             if i["device_type"]=="CURTAIN":
+#                 if i['opr']=='curtain_opr_o':
+#                 # if i['device_status']=='false':
+#                     param={
+#                             "device_id":str(i['device_id']),
+#                             "channel_open":str(i['channel_open']),
+#                             "device_status":str(i['device_status']),
+#                             "opr":str(['opr'])
+#                         }
+#                     curtain_relay_opr(dict(param), 'curtain_opr_o')
                         
-                # elif i['device_status']=='false':
-                elif i['opr']=='curtain_opr_c':
-                    param={
-                            "device_id":str(i['device_id']),
-                            "channel_close":str(i['channel_close']),
-                            "device_status":str(i['device_status']),
-                            "opr":str(i['opr'])
-                        }
-                    curtain_relay_opr(dict(param), 'curtain_opr_c')
+#                 # elif i['device_status']=='false':
+#                 elif i['opr']=='curtain_opr_c':
+#                     param={
+#                             "device_id":str(i['device_id']),
+#                             "channel_close":str(i['channel_close']),
+#                             "device_status":str(i['device_status']),
+#                             "opr":str(i['opr'])
+#                         }
+#                     curtain_relay_opr(dict(param), 'curtain_opr_c')
                         
-                # elif i['device_status']=='false':
-                elif i['opr']=='curtain_opr_s':
-                    param={
-                            "device_id":str(i['device_id']),
-                            "channel_open":str(i['channel_open']),
-                            "channel_close":str(i['channel_close']),
-                            "device_status":str(i['device_status']),
-                            "opr":str(i['opr'])
-                        }
-                    curtain_relay_opr(dict(param), 'curtain_opr_s')
+#                 # elif i['device_status']=='false':
+#                 elif i['opr']=='curtain_opr_s':
+#                     param={
+#                             "device_id":str(i['device_id']),
+#                             "channel_open":str(i['channel_open']),
+#                             "channel_close":str(i['channel_close']),
+#                             "device_status":str(i['device_status']),
+#                             "opr":str(i['opr'])
+#                         }
+#                     curtain_relay_opr(dict(param), 'curtain_opr_s')
                          
-            print("Curtain")
-    except:
-        print("Error in Devices/device_control.py")
+#             print("Curtain")
+#     except:
+#         print("Error in Devices/device_control.py")
+
+
+
+def ClientConfigSocket(data):
+    y = json.dumps(data)
+    i = json.loads(y)
+    i= i[0]
+    id = i['id']
+    if i["device_type"] == "LED":
+        if i['device_informations']['device_status'] == "true":
+            param = {"device_id": int(i['device_informations']['device_id']),
+                        "channel_id": int(i['device_informations']['channel_id']),
+                        "device_status": str(i['device_informations']['device_status']),
+                        # "delay_second":10,
+                        }
+            relay_opr(param)
+
+        elif i['device_informations']['device_status'] == "false":
+            param = {"device_id": int(i['device_informations']['device_id']),
+                        "channel_id": int(i['device_informations']['channel_id']),
+                        "device_status": str(i['device_informations']['device_status']),
+                        # "delay_second":10,
+                        }
+            relay_opr(param)
+        else:
+            param = {"device_id": int(i['device_informations']['device_id']),
+                        "channel_id":  int(i['device_informations']['channel_id']),
+                        "device_status": str(i['device_informations']['device_status'])}
+            relay_opr(param)
+   
+    
+    building = BmsDeviceInformation.objects.get(pk=int(id)) 
+   
+    print(type(i), "meta data")
+    building_serializer = BmsDeviceInformationSerializerPost(building, data=i) 
+    if building_serializer.is_valid(): 
+        building_serializer.save() 
+    # user_id=3
+    # getUserAreaCardList(user_id)
+    if i["device_type"] == "AC":
+        if i['device_status'] == "true":
+            param = {"device_id": str(i['device_id']),
+                    "channel_id": str(i['channel_id']),
+                    "ac_temp": str(i['ac_temp']),
+                    "rm_temp": str(i['rm_temp']),
+                    "mode": str(i['mode']),  
+                    "swing": str(i['swing']),
+                    "fspeed": str(i['fspeed']),
+                    "device_status":str(i['device_status'])}
+            
+            pannel_ac_control(dict(param))
+        elif i['device_status'] == "false":
+            param = {"device_id": str(i['device_id']),
+                    "channel_id": str(i['channel_id']),
+                    "ac_temp": str(i['ac_temp']),
+                    "rm_temp": str(i['rm_temp']),
+                    "mode": str(i['mode']),
+                    "swing": str(i['swing']),
+                    "fspeed": str(i['fspeed']),
+                    "device_status":str(i['device_status'])}
+            pannel_ac_control(dict(param))
+        print("I am AC")
+    if i["device_type"]=="CURTAIN":
+        if i['opr']=='curtain_opr_o':
+        # if i['device_status']=='false':
+            param={
+                    "device_id":str(i['device_id']),
+                    "channel_open":str(i['channel_open']),
+                    "device_status":str(i['device_status']),
+                    "opr":str(['opr'])
+                }
+            curtain_relay_opr(dict(param), 'curtain_opr_o')
+                
+        # elif i['device_status']=='false':
+        elif i['opr']=='curtain_opr_c':
+            param={
+                    "device_id":str(i['device_id']),
+                    "channel_close":str(i['channel_close']),
+                    "device_status":str(i['device_status']),
+                    "opr":str(i['opr'])
+                }
+            curtain_relay_opr(dict(param), 'curtain_opr_c')
+                
+        # elif i['device_status']=='false':
+        elif i['opr']=='curtain_opr_s':
+            param={
+                    "device_id":str(i['device_id']),
+                    "channel_open":str(i['channel_open']),
+                    "channel_close":str(i['channel_close']),
+                    "device_status":str(i['device_status']),
+                    "opr":str(i['opr'])
+                }
+            curtain_relay_opr(dict(param), 'curtain_opr_s')
+                    
+    print("Curtain")

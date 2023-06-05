@@ -24,16 +24,16 @@ class BmsModuleMaster(models.Model):
         
         
 class BmsRole(models.Model):
-    USERTYPE= [
-        ("Admin","Admin"),
-        ("Employee","Employee"),
-        ("Manager","Manager"),
-        ("Visitor","Visitor"),
+    # USERTYPE= [
+    #     ("Admin","Admin"),
+    #     ("Employee","Employee"),
+    #     ("Manager","Manager"),
+    #     ("Visitor","Visitor"),
         
-    ]
-    modules_data=models.ManyToManyField(BmsModuleMaster)
-    role_name=models.CharField(max_length=100,choices=USERTYPE)
-    # device_information=models.JSONField(blank=True)
+    # ]
+    modules_permission=models.ManyToManyField(BmsModuleMaster,blank=True)
+    role_name=models.CharField(max_length=100,blank=True)
+    device_data=models.ManyToManyField(BmsDeviceInformation,blank=True)
     created_role_date=models.DateTimeField(default=timezone.now)
     updated_role_date=models.DateTimeField(auto_now=True)
     
@@ -45,7 +45,7 @@ class BmsRole(models.Model):
   
 class BmsRolesDevicesInformation(models.Model):
     role_data=models.ForeignKey(BmsRole,on_delete=models.CASCADE)
-    subarea_data=models.ManyToManyField(BmsSubAreaMaster,blank= True , null=True)
+    # subarea_data=models.ManyToManyField(BmsSubAreaMaster,blank= True , null=True)
     device_information_data=models.ManyToManyField(BmsDeviceInformation)
     created_date=models.DateTimeField(default=timezone.now)
     # updatated_date=models.DateTimeField(default=timezone.now)
@@ -58,21 +58,22 @@ class BmsRolesDevicesInformation(models.Model):
         db_table='bms_role_device_informations'
         
 class BmsUserType(models.Model):
-    # USERTYPE= [
-    #     ("Admin","Admin"),
-    #     ("Employee","Employee"),
-    #     ("Manager","Manager"),
-    #     ("Visitor","Visitor"),
+    USERTYPE= [
+        ("Admin","Admin"),
+        ("Employee","Employee"),
+        ("Manager","Manager"),
+        ("Visitor","Visitor"),
         
-    # ]
-    # user_type_name=models.CharField(max_length=23)
-    role_data=models.ForeignKey(BmsRolesDevicesInformation,blank=True,related_name='bms_roles', on_delete=models.CASCADE)
+    ]
+    user_type_name=models.CharField(max_length=23,default=True,choices=USERTYPE)
+    # role_data=models.ForeignKey(BmsRolesDevicesInformation,blank=True,related_name='bms_roles', on_delete=models.CASCADE)
     created_user_type_date=models.DateTimeField(default=timezone.now)
     
     def __str__(self):
-        return str(self.id)
+        return str(self.user_type_name)
     class Meta():
         db_table='bms_user_types'
+
         
         
             
@@ -85,13 +86,13 @@ class BmsUser(models.Model):
         ("Residential","Residential"),
         ("Commercial","Commercial")
     ] 
-    user_type_data=models.ForeignKey(BmsUserType,related_name='bms_use_type',blank=True, on_delete=models.CASCADE)
-    # role_id=models.ForeignKey(BmsRole,blank=True,related_name='bms_role', on_delete=models.CASCADE)
+    user_type_data=models.ForeignKey(BmsUserType,related_name='bms_use_type',blank=True, on_delete=models.CASCADE,null=True)
+    role_data=models.ForeignKey(BmsRole,blank=True,related_name='bms_role', on_delete=models.CASCADE, default=True)
     user_email=models.EmailField()
     user_password=models.CharField(max_length=254)
     domain_type=models.CharField(max_length=22,choices=DOMAIN, blank=True)
     status = models.CharField(max_length=100,choices=STATUS,default=STATUS[0][0])
-    status = models.BooleanField(default=False)
+    # status = models.BooleanField(default=False)
     created_user_date=models.DateTimeField(default=timezone.now)
     updated_user_date=models.DateTimeField(auto_now=True)
     
@@ -99,7 +100,10 @@ class BmsUser(models.Model):
     def __str__(self):
         return self.user_email
     class Meta():
-        db_table='bms_users'        
+        db_table='bms_users'     
+
+        
+           
         
             
 class BmsUsersDetail(models.Model):
@@ -111,15 +115,15 @@ class BmsUsersDetail(models.Model):
         ("YES","YES"),
         ("NO","NO")
     ]
-    user_data=models.ForeignKey(BmsUser,related_name='abc', on_delete=models.CASCADE)
-    department_data=models.ForeignKey(BmsDepartmentMaster,related_name='bms_department', on_delete=models.CASCADE ,null=True, blank=True)
-    locker_data=models.ForeignKey(BmsLocker,related_name='bms_locker', on_delete=models.CASCADE)
+    user_data=models.ForeignKey(BmsUser,related_name='abc', on_delete=models.CASCADE,null=True)
+    # department_data=models.ForeignKey(BmsDepartmentMaster,related_name='bms_department', on_delete=models.CASCADE ,null=True, blank=True)
+    locker_data=models.ForeignKey(BmsLocker,related_name='bms_locker', on_delete=models.CASCADE,null=True)
     first_name=models.CharField(max_length=254)
     last_name=models.CharField(max_length=254)
     image=models.ImageField(upload_to ='uploads/', blank=True)
     phone_no=models.CharField(max_length=16)
-    birthday=models.DateField(auto_now_add=True)
-    address=models.TextField(max_length=2321)
+    dob=models.DateField(auto_now_add=True)
+    address=models.TextField(max_length=2321,null=True)
     id_proof=models.ImageField(upload_to='uplodes/',blank=True)
     visiting_card=models.ImageField(upload_to='uplodes/',blank=True)
     wallet_balance=models.CharField(max_length=909)
