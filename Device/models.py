@@ -10,8 +10,8 @@ class BmsBuildingMaster(models.Model):
         ("In-Active", "In-Active"),
     ]
     DELETE=[
-        ("NO","NO"),
-        ("YES","YES")
+        ("No","No"),
+        ("Yes","Yes")
     ]
     tower_name = models.CharField(max_length=100)
     status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
@@ -33,8 +33,8 @@ class BmsFloorMaster(models.Model):
     ]
     
     DELETE=[
-        ("NO","NO"),
-        ("YES","YES")
+        ("No","No"),
+        ("Yes","Yes")
     ]
     tower_data = models.ForeignKey(BmsBuildingMaster,on_delete=models.CASCADE,related_name='floor_data',null=True,blank=True)   ## changeses
     floor_name = models.CharField(max_length=100)
@@ -57,8 +57,8 @@ class BmsAreaMaster(models.Model):
     ]
     
     DELETE=[
-        ("NO","NO"),
-        ("YES","YES")
+        ("No","No"),
+        ("Yes","Yes")
     ]
     area_name = models.CharField(max_length=100)
     floor_data = models.ForeignKey(BmsFloorMaster,on_delete=models.CASCADE,related_name='areas_data',null=True,blank=True)
@@ -140,8 +140,8 @@ class BmsSubAreaMaster(models.Model):
         ("In-Active", "In-Active"),
     ]
     DELETE=[
-        ("NO","NO"),
-        ("YES","YES")
+        ("No","No"),
+        ("Yes","Yes")
     ]
     # floor_id=models.ForeignKey(bms_floor_master,on_delete=models.CASCADE)
     # tower_details=models.ForeignKey(bms_building_master,on_delete=models.CASCADE)
@@ -364,12 +364,12 @@ class BmsScenes(models.Model):
     ]
     
     OPERATION=[
-        ("ON", "ON"),
-        ("OFF", "OFF"),
+        ("on", "on"),
+        ("off", "off"),
     ]
     DELETE=[
-        ("NO","NO"),
-        ("YES","YES")
+        ("No","No"),
+        ("Yes","Yes")
     ]
     
     
@@ -394,12 +394,13 @@ class BmsSceneAppliancesDetails(models.Model):
         ("In-Active", "In-Active"),
     ]
     DELETE=[
-        ("NO","NO"),
-        ("YES","YES")
+        ("No","No"),
+        ("Yes","Yes")
     ]
     scene=models.ForeignKey(BmsScenes,on_delete=models.CASCADE,related_name='scene_appliance_details')
     device_type_slug=models.CharField(max_length=23)
     component_id=models.ForeignKey(BmsDeviceInformation,on_delete=models.CASCADE)
+    componet_name= models.CharField(max_length=23,default=True)
     operation_type=models.CharField(max_length=23)
     operation_value=models.CharField(max_length=23)
     status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
@@ -425,8 +426,8 @@ class BmsTriggers(models.Model):
         ("Schedule", "Schedule"),
     ]
     DELETE=[
-        ("NO","NO"),
-        ("YES","YES")
+        ("No","No"),
+        ("Yes","Yes")
     ]
     
 

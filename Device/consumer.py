@@ -111,13 +111,14 @@ class Connected(AsyncConsumer):
 
 class MySyncConsumer(SyncConsumer):
     def websocket_connect(self,event):
-        user_id =3
+        self.group_name = self.scope['url_route']['kwargs']['groupnuname']
+        user_id = int(self.group_name)
         a = getUserAreaCardList(user_id)
         # print("Websocket Connected...",event)
         # print("Channel layer " , self.channel_layer) #get default channel layer
         # print("Channel name " , self.channel_name) #get default channel name
 
-        self.group_name = self.scope['url_route']['kwargs']['groupnuname']
+
 
         async_to_sync(self.channel_layer.group_add)(self.group_name,self.channel_name)     #convert async function to sync funtion
         self.send({
@@ -131,14 +132,14 @@ class MySyncConsumer(SyncConsumer):
             )
 
     def websocket_receive(self,event):
+        self.group_name = self.scope['url_route']['kwargs']['groupnuname']
+        user_id = int(self.group_name)
         try:
             data = json.loads(event['text'])
             print(data, "")
             ClientConfigSocket(data)
-            user_id =3
             data= getUserAreaCardList(user_id)
             print(type(data))
-
             # self.group_name = self.scope['url_route']['kwargs']['groupnuname']
             # print("Group name: ",self.group_name)
 

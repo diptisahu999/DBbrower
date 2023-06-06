@@ -68,7 +68,7 @@ class LoginView(APIView):
 @api_view(['GET', 'POST', 'DELETE'])
 def user_list(request):
     if request.method == 'GET':
-        bms_users = BmsUser.objects.all()
+        bms_users = BmsUser.objects.filter(is_deleted="No")
         bms_users_serializer = BmsUserDetailsSerializer(bms_users, many=True)
         return Response({"data": True, "status_code": 200, "message": "User Lists", "response": bms_users_serializer.data},
                         status=status.HTTP_200_OK)

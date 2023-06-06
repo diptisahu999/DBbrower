@@ -103,7 +103,7 @@ class BmsUserDetailsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BmsUser
-        fields = ['id', 'user_type_name', 'role_name', 'user_email', 'domain_type', 'status', 'user_details']
+        fields = ['id', 'user_type_name', 'role_name', 'user_email', 'domain_type', 'status','is_deleted', 'user_details']
         depth = 10
 
     def get_user_details(self, obj):

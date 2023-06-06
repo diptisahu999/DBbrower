@@ -66,7 +66,6 @@ class BmsUserType(models.Model):
         
     ]
     user_type_name=models.CharField(max_length=23,default=True,choices=USERTYPE)
-    # role_data=models.ForeignKey(BmsRolesDevicesInformation,blank=True,related_name='bms_roles', on_delete=models.CASCADE)
     created_user_type_date=models.DateTimeField(default=timezone.now)
     
     def __str__(self):
@@ -87,8 +86,8 @@ class BmsUser(models.Model):
         ("Commercial","Commercial")
     ] 
     DELETE=[
-        ("YES","YES"),
-        ("NO","NO")
+        ("Yes","Yes"),
+        ("No","No")
     ]
     user_type_data=models.ForeignKey(BmsUserType,related_name='bms_use_type',blank=True, on_delete=models.CASCADE,null=True)
     role_data=models.ForeignKey(BmsRole,blank=True,related_name='bms_role', on_delete=models.CASCADE, default=True)
@@ -117,12 +116,12 @@ class BmsUsersDetail(models.Model):
         ("In-Active","In-Active"),
     ]
     VEHICLE=[
-        ("YES","YES"),
-        ("NO","NO")
+        ("Yes","Yes"),
+        ("No","No")
     ]
     DELETE=[
-        ("YES","YES"),
-        ("NO","NO")
+        ("Yes","Yes"),
+        ("No","No")
     ]
     user_data=models.ForeignKey(BmsUser,related_name='abc', on_delete=models.CASCADE,null=True)
     # department_data=models.ForeignKey(BmsDepartmentMaster,related_name='bms_department', on_delete=models.CASCADE ,null=True, blank=True)
@@ -206,14 +205,19 @@ class BmsUserVehiclesDetail(models.Model):
         ("Car","Car"),
     ]
     EV=[
-        ("true","true"),
+        ("Yes","Yes"),
         ("No","No"),
+    ]
+    DELETE=[
+        ("Yes","Yes"),
+        ("No","No")
     ]
     user_details_id=models.ForeignKey(BmsUser, on_delete=models.CASCADE)
     type=models.CharField(max_length=23,choices=STATUS)
     vehicle_no=models.CharField(max_length=23)
     driver_name=models.CharField(max_length=23)
     driver_no=models.CharField(max_length=23)
+    is_deleted=models.CharField(max_length=23,choices=DELETE,default=DELETE[1][1])
     is_ev=models.CharField(max_length=23,choices=EV)
     status = models.BooleanField(default=False)
     
@@ -227,8 +231,8 @@ class BmsUserVehiclesDetail(models.Model):
 class BmsUserHasAreaAcces(models.Model):
     
     DELETE=[
-        ("YES","YES"),
-        ("NO","NO")
+        ("Yes","Yes"),
+        ("No","No")
     ]
     user_details_id=models.ForeignKey(BmsUser, on_delete=models.CASCADE)
     building_id=models.ForeignKey(BmsBuildingMaster, on_delete=models.CASCADE)
