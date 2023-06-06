@@ -171,6 +171,10 @@ def user(request, pk):
  
     elif request.method == 'PUT':  
         
+
+
+
+        
         bms_uses_serializer = BmsUserDetailsSerializer(bms_users, data=request.data) 
         if bms_uses_serializer.is_valid(): 
             bms_uses_serializer.save() 

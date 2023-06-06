@@ -107,9 +107,9 @@ class BmsUserDetailsSerializer(serializers.ModelSerializer):
         depth = 10
 
     def get_user_details(self, obj):
-        card_list = BmsUsersDetail.objects.filter(user_data__id=obj.id)
-        serializer = BmsUserSerializerss(instance=card_list, many=True)
-        return serializer.data
+        card_list = BmsUsersDetail.objects.filter(user_data__id=obj.id).first()
+        serializer = BmsUserSerializerss(instance=card_list)
+        return serializer.data if card_list else None
 
     def get_user_type_name(self, obj):
         if obj.user_type_data:

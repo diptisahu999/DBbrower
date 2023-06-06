@@ -65,7 +65,12 @@ class BmsUserType(models.Model):
         ("Visitor","Visitor"),
         
     ]
+    HasRole=[
+        ("true","true"),
+        ("false","false")
+             ]
     user_type_name=models.CharField(max_length=23,default=True,choices=USERTYPE)
+    has_role=models.CharField(max_length=23,choices=HasRole,default=HasRole[1][1])
     created_user_type_date=models.DateTimeField(default=timezone.now)
     
     def __str__(self):
