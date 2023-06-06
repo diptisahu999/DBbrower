@@ -53,7 +53,7 @@ def getDeviceStatus():
 
 def getUserAreaCardList(user_id):
     # data = BmsUserAreaCardsList.objects.filter()
-    user_id=1
+    user_id=24
     data = BmsUserAreaCardsList.objects.filter(user_data__id=user_id)
     serialized_data = []
     

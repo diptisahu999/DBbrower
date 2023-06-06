@@ -372,19 +372,48 @@ class BmsScenes(models.Model):
         ("YES","YES")
     ]
     
-    is_deleted=models.CharField(max_length=23,choices=DELETE,default=DELETE[0][0])
+    
     scene_name =models.CharField(max_length=100, blank=True)
-    devices_details = models.ManyToManyField(BmsDeviceInformation,blank=True)
-    operation_type =models.CharField(max_length=100, blank=True, choices=OPERATION)
     status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
+    is_deleted=models.CharField(max_length=23,choices=DELETE,default=DELETE[0][0])
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now_add=True)
+
 
     def __str__(self):
         return self.scene_name
 
     class Meta():
         db_table = 'bms_scenes'
+
+
+
+class BmsSceneAppliancesDetails(models.Model):
+    STATUS = [
+        ("Active", "Active"),
+        ("In-Active", "In-Active"),
+    ]
+    DELETE=[
+        ("NO","NO"),
+        ("YES","YES")
+    ]
+    scene=models.ForeignKey(BmsScenes,on_delete=models.CASCADE,related_name='scene_appliance_details')
+    device_type_slug=models.CharField(max_length=23)
+    component_id=models.ForeignKey(BmsDeviceInformation,on_delete=models.CASCADE)
+    operation_type=models.CharField(max_length=23)
+    operation_value=models.CharField(max_length=23)
+    status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
+    is_deleted=models.CharField(max_length=23,choices=DELETE,default=DELETE[0][0])
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now_add=True)
+    
+    
+    def __str__(self):
+        return str(self.id)
+
+    class Meta():
+        db_table = 'bms_scene_appliances_details'
+        
 
 class BmsTriggers(models.Model):
     STATUS = [
@@ -400,12 +429,12 @@ class BmsTriggers(models.Model):
         ("YES","YES")
     ]
     
-    is_deleted=models.CharField(max_length=23,choices=DELETE,default=DELETE[0][0])
-    scene_details = models.ForeignKey(BmsScenes,on_delete=models.CASCADE,null=True)
+
     trigger_name = models.CharField(max_length=100, blank=True)
     action_type = models.CharField(max_length=100, choices=action_type_choice,blank=True)
-    trigger_data =models.CharField(max_length=999, blank=True)
+    trigger_data =models.JSONField()
     status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
+    is_deleted=models.CharField(max_length=23,choices=DELETE,default=DELETE[0][0])
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now_add=True)
 

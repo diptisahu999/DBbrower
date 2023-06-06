@@ -634,19 +634,22 @@ def sence_list(request):
     if request.method=='GET':
         sences=BmsScenes.objects.all()
         
-        sences_serializers=SencesSerializers(sences,many=True)
+        sences_serializers=ProfileSerializerssss(sences,many=True)
         
         return Response({"data":"true","status_code": 200, "message": "scences Lists", "response":sences_serializers.data})
     
     
     elif request.method=='POST':
         data = request.data
-        try:
-            data['devices_details'] = data.pop('devices_id')
-        except:
-            return Response({"data":"true","status_code": 405, "message": "devices_id does not exist"})
+             
+        # try:
+        #     data['devices_details'] = data.pop('devices_id')
+        # except:
+        #     return Response({"data":"true","status_code": 405, "message": "devices_id does not exist"})
         
-        sence_serializer=SencesSerializersPost(data=request.data)
+        sence_serializer=ProfileSerializerssss(data=request.data)
+        
+        print(sence_serializer)
         
         if sence_serializer.is_valid():
             sence_serializer.save()
@@ -704,11 +707,11 @@ def trigger(request):
     
  
     elif request.method == 'POST':
-        data= request.data
-        try:
-            data['scene_details'] = data.pop('scene_id')
-        except:
-            return Response({"data":"true","status_code": 405, "message": "scene_id does not exist"})
+        # data= request.data
+        # try:
+        #     data['scene_details'] = data.pop('scene_id')
+        # except:
+        #     return Response({"data":"true","status_code": 405, "message": "scene_id does not exist"})
 
         
         module_serializer = BmsTriggerSerializersPost(data=request.data)

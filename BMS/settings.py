@@ -164,6 +164,7 @@ CORS_ALLOW_METHODS = [
 ]
 CORS_ALLOW_HEADERS = ['*']
 CSRF_TRUSTED_ORIGINS  = ['http://localhost:8090',
+                         "http://localhost:59001"
                          'http://192.168.1.30:8090',
                         'https://8a90-2401-4900-1f3f-6d43-6078-76f4-2c59-d1fe.ngrok-free.app', ]
 

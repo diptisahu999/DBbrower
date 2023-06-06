@@ -87,8 +87,9 @@ class BmsTriggerSerializers(serializers.ModelSerializer):
     class Meta:
         model = BmsTriggers
         # fields = ['user_data','card_id','user_card_name','devices_details','card_slug','status','created_at']
-        fields='__all__'
-        depth = 2
+        # fields='__all__'
+        fields = ['id','trigger_name','action_type','status','trigger_data']
+        depth = 1
 
 
 # POST        
@@ -282,3 +283,36 @@ class ProfileSerializer(serializers.ModelSerializer):
         for hobby in user_hobby:
             BmsFloorMaster.objects.create(user=profile_instance,**hobby)
         return profile_instance
+    
+
+
+
+
+## scence serializer
+
+
+
+
+class SencesSerializers(serializers.ModelSerializer):
+    class Meta:
+        model=BmsSceneAppliancesDetails
+        # fields='__all__' 
+        fields=['device_type_slug','component_id','operation_type','operation_value']
+        # depth = 1
+
+        
+class ProfileSerializerssss(serializers.ModelSerializer):
+    scene_appliance_details = SencesSerializers(many=True)
+
+    class Meta:
+        model = BmsScenes
+        # fields = '__all__'
+        fields=['id','scene_name','status','created_at','updated_at','scene_appliance_details']
+        depth = 10
+
+    def create(self, validated_data):
+        scene_appliance_details = validated_data.pop('scene_appliance_details')
+        scene_instance = BmsScenes.objects.create(**validated_data)
+        for detail in scene_appliance_details:
+            BmsSceneAppliancesDetails.objects.create(scene=scene_instance, **detail)
+        return scene_instance

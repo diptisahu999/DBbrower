@@ -13,7 +13,7 @@ class MyAsyncConsumer(SyncConsumer):
     connected_clients = set()
     def websocket_connect(self,event):
         # print("Websocket Connected...",event)
-        user_id =1
+        user_id =24
         a = getUserAreaCardList(user_id)
 
         
@@ -44,7 +44,7 @@ class MyAsyncConsumer(SyncConsumer):
             data = json.loads(event['text'])
             print(data, "")
             ClientConfigSocket(data)
-            user_id =1
+            user_id =24
             data= getUserAreaCardList(user_id)
             self.send_to_all(data, exclude=self)
             self.send({
@@ -53,7 +53,7 @@ class MyAsyncConsumer(SyncConsumer):
             })
             # self.send_to_all(data, exclude=self)
         except:
-            user_id =1
+            user_id =24
             data= getUserAreaCardList(user_id)
             self.send({
             "type": "websocket.send",

@@ -70,7 +70,8 @@ def user_list(request):
     if request.method == 'GET':
         bms_users = BmsUser.objects.all()
         bms_users_serializer = BmsUserDetailsSerializer(bms_users, many=True)
-        return Response({"data": "true", "status_code": 200, "message": "User Lists", "response": bms_users_serializer.data}, status=status.HTTP_200_OK)
+        return Response({"data": True, "status_code": 200, "message": "User Lists", "response": bms_users_serializer.data},
+                        status=status.HTTP_200_OK)
 
     elif request.method == 'POST':
         # input("111")   
@@ -128,7 +129,7 @@ def user_list(request):
         except serializers.ValidationError as e:
             return Response({"status_code": 400, "message": "Invalid data", "errors": e.detail}, status=status.HTTP_400_BAD_REQUEST)
 
-        token = get_tokens_for_user(user)
+        # token = get_tokens_for_user(user)
         
         return Response({"data": "true", "status_code": 200,"message": "User Added Successfully", "response": user_serializer.data}, status=status.HTTP_201_CREATED)
     
@@ -169,6 +170,7 @@ def user(request, pk):
         
  
     elif request.method == 'PUT':  
+        
         bms_uses_serializer = BmsUserDetailsSerializer(bms_users, data=request.data) 
         if bms_uses_serializer.is_valid(): 
             bms_uses_serializer.save() 

@@ -67,15 +67,43 @@ class BmsUserSerializerss(serializers.ModelSerializer):
         fields = ['id','first_name','last_name','image','phone_no','dob','wallet_balance','has_vehicle','locker_data',]
         # depth = 10
 
+# class BmsUserDetailsSerializer(serializers.ModelSerializer):
+#     user_details = serializers.SerializerMethodField()
+#     user_type_name = serializers.SerializerMethodField()
+#     role_name = serializers.SerializerMethodField()
+
+
+#     class Meta:
+#         model = BmsUser
+#         fields = ['id','user_type_name','role_name','user_email', 'domain_type', 'status', 'user_details']
+#         # fields='__all__'
+#         depth = 10
+
+#     def get_user_details(self, obj):
+#         card_list = BmsUsersDetail.objects.filter(user_data__id=obj.id)
+#         serializer = BmsUserSerializerss(instance=card_list, many=True)
+#         return serializer.data
+
+#     def get_user_type_name(self, obj):
+#         if obj.user_type_data:
+#             return obj.user_type_data.user_type_name
+#         return None
+    
+#     def get_role_name(self, obj):
+#         if obj.role_data:
+#             return obj.role_data.role_name
+#         return None
+
+
+
 class BmsUserDetailsSerializer(serializers.ModelSerializer):
     user_details = serializers.SerializerMethodField()
     user_type_name = serializers.SerializerMethodField()
     role_name = serializers.SerializerMethodField()
 
-
     class Meta:
         model = BmsUser
-        fields = ['id','user_type_name','role_name','user_email', 'domain_type', 'status', 'user_details',]
+        fields = ['id', 'user_type_name', 'role_name', 'user_email', 'domain_type', 'status', 'user_details']
         depth = 10
 
     def get_user_details(self, obj):
@@ -87,12 +115,11 @@ class BmsUserDetailsSerializer(serializers.ModelSerializer):
         if obj.user_type_data:
             return obj.user_type_data.user_type_name
         return None
-    
+
     def get_role_name(self, obj):
         if obj.role_data:
             return obj.role_data.role_name
         return None
-
         
 
 class BmsUserDetailsSerializers(serializers.ModelSerializer):
