@@ -94,8 +94,8 @@ class BmsUser(models.Model):
         ("Yes","Yes"),
         ("No","No")
     ]
-    user_type_data=models.ForeignKey(BmsUserType,related_name='bms_use_type',blank=True, on_delete=models.CASCADE,null=True)
-    role_data=models.ForeignKey(BmsRole,blank=True,related_name='bms_role', on_delete=models.CASCADE, default=True)
+    user_type_id=models.ForeignKey(BmsUserType,related_name='bms_use_type',blank=True, on_delete=models.CASCADE,null=True)
+    role_id=models.ForeignKey(BmsRole,blank=True,related_name='bms_role', on_delete=models.CASCADE, default=True)
     user_email=models.EmailField()
     user_password=models.CharField(max_length=254)
     domain_type=models.CharField(max_length=22,choices=DOMAIN, blank=True)

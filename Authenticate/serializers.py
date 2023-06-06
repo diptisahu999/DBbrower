@@ -100,11 +100,14 @@ class BmsUserDetailsSerializer(serializers.ModelSerializer):
     user_details = serializers.SerializerMethodField()
     user_type_name = serializers.SerializerMethodField()
     role_name = serializers.SerializerMethodField()
+    # role_id = serializers.SerializerMethodField()
+
+
 
     class Meta:
         model = BmsUser
-        fields = ['id', 'user_type_name', 'role_name', 'user_email', 'domain_type', 'status','is_deleted', 'user_details']
-        depth = 10
+        fields = ['id', 'user_type_id','user_type_name','role_name','role_id','user_email','domain_type', 'status','is_deleted', 'user_details']
+        # depth = 1
 
     def get_user_details(self, obj):
         card_list = BmsUsersDetail.objects.filter(user_data__id=obj.id).first()
@@ -112,14 +115,19 @@ class BmsUserDetailsSerializer(serializers.ModelSerializer):
         return serializer.data if card_list else None
 
     def get_user_type_name(self, obj):
-        if obj.user_type_data:
-            return obj.user_type_data.user_type_name
+        if obj.user_type_id:
+            return obj.user_type_id.user_type_name
         return None
 
     def get_role_name(self, obj):
-        if obj.role_data:
-            return obj.role_data.role_name
+        if obj.role_id:
+            return obj.role_id.role_name
         return None
+    
+    # def get_role_name(self, obj):
+    #     if obj.role_data:
+    #         return obj.role_data.role_id
+    #     return None
         
 
 class BmsUserDetailsSerializers(serializers.ModelSerializer):
