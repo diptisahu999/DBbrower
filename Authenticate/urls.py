@@ -35,6 +35,9 @@ urlpatterns = [
     path('get_device_data',views.get_device_data),
 
 
-    path('get_device_filter',views.get_device)
+    path('get_device_filter',views.get_device),
+    
+    # path('get_device_filter',views.get_device)
+    
 
 ]

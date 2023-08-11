@@ -11,6 +11,8 @@ from rest_framework import status
 from django.http import HttpResponse
 # from Device.camera import LiveWebCam
 
+from django.db.models import Q
+
 
 # import cv2
 
@@ -34,7 +36,7 @@ from django.http import HttpResponse
 @api_view(['GET', 'POST', 'DELETE'])
 def building_list(request):
     if request.method == 'GET':
-        building = BmsBuildingMaster.objects.all()
+        building = BmsBuildingMaster.objects.filter(is_deleted="No")
         building_serializer = ProfileSerializer(building, many=True)
         # building_serializer = BmsBuildingMasterSerializer(building, many=True) 
         return Response({"data":"true","status_code": 200, "message": "Building Lists", "response":building_serializer.data})
@@ -107,9 +109,10 @@ def buildings(request, pk):
 @api_view(['GET', 'POST', 'DELETE'])
 def floor_list(request):
     if request.method == 'GET':
-        Floors = BmsFloorMaster.objects.all()
-        Floors_serializer = BmsFloorMasterSerializer(Floors, many=True,read_only=True)
-        return Response({"data":"true","status_code": 200, "message": "Floor Lists", "response":Floors_serializer.data})
+        Floors = BmsFloorMaster.objects.filter(Q(tower__is_deleted="No") & Q(is_deleted="No"))
+       
+        Floors_serializer = BmsFloorMasterSerializer(Floors, many=True, read_only=True)
+        return Response({"data": True, "status_code": 200, "message": "Floor Lists", "response": Floors_serializer.data})
               
     elif request.method == 'POST':
        
@@ -117,14 +120,14 @@ def floor_list(request):
         tower_ids = data['tower_id']
         for tower_id in tower_ids:
             tower = dict(data)
-            tower.update({'tower_data': tower_id})
+            tower.update({'tower': tower_id})
             print(tower)
             serializer = BmsFloorMasterSerializerPost(data=tower)
             if serializer.is_valid():
                 serializer.save()
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+         
         return Response({'data': 'true', 'status_code': 200, 'message': 'Floor added successfully'},status=status.HTTP_201_CREATED)
     
     # elif request.method == 'DELETE':
@@ -214,7 +217,8 @@ def department(request, pk):
 @api_view(['GET', 'POST', 'DELETE'])
 def bms_sub_area_list(request):
     if request.method == 'GET':
-        subare = BmsSubAreaMaster.objects.all()
+        # subare=BmsSubAreaMaster.objects.filter(is_deleted="No")
+        subare = BmsSubAreaMaster.objects.filter(is_deleted="No",area__is_deleted="No",area__floor__is_deleted="No",area__floor__tower__is_deleted="No")
         subarea_serializer = BmsSubAreaMasterSerializer(subare, many=True)
         return Response({"data":"true","status_code": 200, "message": "Sub Area Lists", "response":subarea_serializer.data})
         
@@ -232,7 +236,7 @@ def bms_sub_area_list(request):
         print(Floor_ids)
         for Floor_id in Floor_ids:
             floor = dict(data)
-            floor.update({'area_data': Floor_id})
+            floor.update({'area': Floor_id})
             print(floor)    
             serializer = BmsSubAreaMasterSerializerPost(data=floor)
             if serializer.is_valid():
@@ -243,9 +247,9 @@ def bms_sub_area_list(request):
         return Response({'data': 'true', 'status_code': 200, 'message': 'Sub area added successfully'}) 
         # return Response({"data":"true","status_code": 200, "message": "Building Added Successfully", "response":building_serializer.data})
          
-    elif request.method == 'DELETE':
-        count = BmsSubAreaMaster.objects.all().delete()
-        return Response({'message': '{} Sub Area was deleted successfully!'.format(count[0])}, status=status.HTTP_204_NO_CONTENT)    
+    # elif request.method == 'DELETE':
+    #     count = BmsSubAreaMaster.objects.all().delete()
+    #     return Response({'message': '{} Sub Area was deleted successfully!'.format(count[0])}, status=status.HTTP_204_NO_CONTENT)    
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def bms_sub_area(request, pk):
@@ -327,6 +331,15 @@ def bms_locker_list(request):
         
         
     elif request.method == 'POST':
+        
+        data = request.data
+        try:
+            # data['devices_id'] = data.pop('devices_details')
+            data['sub_area'] = data.pop('sub_area_id')
+        except:
+            pass
+        
+        
         lockers_serializer = BmsLockerSerializerPost(data=request.data)
         if lockers_serializer.is_valid():
             lockers_serializer.save()
@@ -371,12 +384,22 @@ def bms_locker_list_details(request, pk):
 @api_view(['GET', 'POST','DELETE'])
 def device_list(request):
     if request.method == 'GET':
+        # devices = BmsDeviceInformation.objects.filter(devices_details__is_used="Yes")
         devices = BmsDeviceInformation.objects.all()
         devices_serializer = BmsDeviceInformationSerializer(devices, many=True)
         # return JsonResponse(tutorials_serializer.data, safe=False)
         return Response({"data":"true","status_code": 200, "message": "Device Information Lists", "response":devices_serializer.data})       
         
     elif request.method == 'POST':
+        data=request.data
+        
+        try:
+            # data['devices_id'] = data.pop('devices_details')
+            data['hardware_details'] = data.pop('hardware_details_id')
+        except:
+            pass
+        
+        
         devices_serializer = BmsDeviceInformationSerializerPost(data=request.data)
         if devices_serializer.is_valid():
             devices_serializer.save()
@@ -420,7 +443,8 @@ def device_list_details(request, pk):
 @api_view(['GET', 'POST', 'DELETE'])
 def bms_area_list(request):
     if request.method == 'GET':
-        areas = BmsAreaMaster.objects.all()
+        areas = BmsAreaMaster.objects.filter(floor__is_deleted="No",floor__tower__is_deleted='No',is_deleted='No')
+        # areas=BmsFloorMaster.objects.filter(Q(floor_data__is_deleted="No") & Q(floor_data__tower_data__is_deleted="No") & Q(is_deleted="No"))
         areas_serializer = BmsAreaMasterSerializer(areas, many=True)
         # return JsonResponse(tutorials_serializer.data, safe=False)
         return Response({"data":"true","status_code": 200, "message": "Area Lists", "response":areas_serializer.data})
@@ -433,10 +457,10 @@ def bms_area_list(request):
         for area_id in area_ids:
             area = dict(data)
             # tower_ids = data['tower_id']
-            area.update({'floor_data': area_id})
+            area.update({'floor': area_id})
             del area['floor_id']
             # area['floor_data'] = area_id
-            print(area)    
+            # print(area)    
             serializer = BmsAreaMasterSerializerPost(data=area)
             if serializer.is_valid():
                 serializer.save()
@@ -470,13 +494,13 @@ def bms_area_list_1(request, pk):
         return Response({"data":"true","status_code": 200, "message": "Get data Successfully", "response":areas_serializer.data}) 
  
     elif request.method == 'PUT':  
-        data = request.data
-        area_ids = data['floor_id']
-        # print(Floor_ids)
-        for area_id in area_ids:
-            area = dict(data)
-            area.update({'floor_data': area_id})
-        areas_serializer = BmsAreaMasterSerializerPost(areas, data=area)
+        # data = request.data
+        # area_ids = data['floor_id']
+        # # print(Floor_ids)
+        # for area_id in area_ids:
+        #     area = dict(data)
+        #     area.update({'floor_data': area_id})
+        areas_serializer = BmsAreaMasterSerializerPost(areas, data=request.data)
         if areas_serializer.is_valid(): 
             areas_serializer.save() 
             return Response({"data":"true","status_code": 200, "message": "Area Update Successfully", "response":areas_serializer.data})
@@ -503,7 +527,7 @@ def bms_user_area_card_list(request):
         except:
             return Response({"data":"true","status_code": 405, "response": "User Id not found"},status=status.HTTP_400_BAD_REQUEST)
 
-        area_card = BmsUserAreaCardsList.objects.filter(user_data__id=data['user_id'])    
+        area_card = BmsUserAreaCardsList.objects.filter(user__id=data['user_id'])    
         area_card_serializer = BmsUserAreaCardsListSerializer(area_card, many=True)
         # return JsonResponse(tutorials_serializer.data, safe=False)
         return Response({"data":"true","status_code": 200, "message": "User Card Lists", "response":area_card_serializer.data})
@@ -513,7 +537,7 @@ def bms_user_area_card_list(request):
         data=request.data
         # a = input("stop")
         try:
-            data['user_data'] = data.pop('user_id')
+            data['user'] = data.pop('user_id')
         except:
             return Response({"data":"true","status_code": 405, "message": "user_id does not exist"})
         # print(data)
@@ -525,9 +549,9 @@ def bms_user_area_card_list(request):
             
         return Response({"status_code":401,"responce":area_card_serializer.errors},status=status.HTTP_400_BAD_REQUEST)
     
-    elif request.method == 'DELETE':
-        count = BmsUserAreaCardsList.objects.all().delete()
-        return Response({'message': '{} Card was deleted successfully!'.format(count[0])}, status=status.HTTP_204_NO_CONTENT)    
+    # elif request.method == 'DELETE':
+    #     count = BmsUserAreaCardsList.objects.all().delete()
+    #     return Response({'message': '{} Card was deleted successfully!'.format(count[0])}, status=status.HTTP_204_NO_CONTENT)    
 
 
 
@@ -550,7 +574,7 @@ def bms_user_area_card_list_details(request, pk):
         data=request.data
         print(data)
         try:
-            data['user_data'] = data.pop('user_id')
+            data['user'] = data.pop('user_id')
         except:
             return Response({"data":"true","status_code": 405, "message": "user_id does not exist"})
         area_card_serializer = BmsUserAreaCardsListSerializerPut(area_card, data=data) 
@@ -740,11 +764,11 @@ def trigger_details(request, pk):
         return Response({"data":"true","status_code": 200, "message": "Trigger Get Successfully", "response":module_serializer.data},status=status.HTTP_200_OK)  
  
     elif request.method == 'PUT': 
-        data= request.data
-        try:
-            data['scene_details'] = data.pop('scene_id')
-        except:
-            return Response({"data":"true","status_code": 405, "message": "scene_id does not exist"})
+        # data= request.data
+        # try:
+        #     data['scene_details'] = data.pop('scene_id')
+        # except:
+        #     return Response({"data":"true","status_code": 405, "message": "scene_id does not exist"})
         module_serializer = BmsTriggerSerializersPost(bms_module, data=request.data) 
         if module_serializer.is_valid(): 
             module_serializer.save() 
@@ -755,6 +779,156 @@ def trigger_details(request, pk):
     elif request.method == 'DELETE': 
         bms_module.delete() 
         return Response({'message': 'Trigger was deleted successfully!'}, status=status.HTTP_204_NO_CONTENT)
+    
+    
+    
+    
+## Bms User History
+
+@api_view(['GET', 'POST', 'DELETE'])
+# @permission_classes([IsAuthenticated])
+def user_history(request):
+    if request.method == 'GET':
+        bms_history = BmsHistory.objects.all()        
+        bms_history_serializer = UserHistorySerializers(bms_history, many=True)
+        return Response({"data":"true","status_code": 200, "message": "List ", "response":bms_history_serializer.data},status=status.HTTP_200_OK)
+    
+ 
+    elif request.method == 'POST':
+        history_serializer = UserHistorySerializers(data=request.data)
+        if history_serializer.is_valid():
+            history_serializer.save()
+            return Response({"data":"true","status_code": 200, "message": "Trigger Added Sucessfuly!!","response":history_serializer.data},status=status.HTTP_201_CREATED) 
+        return Response({"status_code":401,"responce":history_serializer.errors},status=status.HTTP_400_BAD_REQUEST) 
+    
+    # elif request.method == 'DELETE':
+    #     count = BmsTriggers.objects.all().delete()
+    #     return Response({'message': '{} Trigger was deleted successfully!'.format(count[0])}, status=status.HTTP_204_NO_CONTENT)
+    
+    
+    
+    
+### 08/06/2024
+
+
+
+@api_view(['GET', 'POST', 'DELETE'])
+# @permission_classes([IsAuthenticated])
+def hardware_master(request):
+    if request.method == 'GET':
+        bms_module = BmsHardwareTypeMaster.objects.all()        
+        bms_module_serializer = BmsHardwareTypeMasterSerializers(bms_module, many=True)
+        return Response({"data":"true","status_code": 200, "message": "Hardware type Lists ", "response":bms_module_serializer.data},status=status.HTTP_200_OK)
+    
+ 
+    elif request.method == 'POST':
+        
+        module_serializer = BmsHardwareTypeMasterSerializers(data=request.data)
+        if module_serializer.is_valid():
+            module_serializer.save()
+            return Response({"data":"true","status_code": 200, "message": "Hardware type Added Sucessfuly!!","response":module_serializer.data},status=status.HTTP_201_CREATED) 
+        return Response({"status_code":401,"responce":module_serializer.errors},status=status.HTTP_400_BAD_REQUEST) 
+    
+    # elif request.method == 'DELETE':
+    #     count = BmsHardwareTypeMaster.objects.all().delete()
+    #     return Response({'message': '{} Trigger was deleted successfully!'.format(count[0])}, status=status.HTTP_204_NO_CONTENT)
+    
+    
+ 
+@api_view(['GET', 'PUT', 'DELETE'])
+# @permission_classes([IsAuthenticated])
+def hardware_type_master(request, pk):
+    try: 
+        bms_module = BmsHardwareTypeMaster.objects.get(pk=pk) 
+    except BmsHardwareTypeMaster.DoesNotExist: 
+        return Response({'message': 'The Hardware type does not exist'}, status=status.HTTP_404_NOT_FOUND) 
+         
+ 
+    if request.method == 'GET': 
+        module_serializer = BmsHardwareTypeMasterSerializers(bms_module) 
+        return Response({"data":"true","status_code": 200, "message": "Hardware type Get Successfully", "response":module_serializer.data},status=status.HTTP_200_OK)  
+ 
+    elif request.method == 'PUT': 
+        data= request.data
+        module_serializer = BmsHardwareTypeMasterSerializers(bms_module, data=request.data) 
+        if module_serializer.is_valid(): 
+            module_serializer.save() 
+            return Response({"data":"true","status_code": 200, "message": "Hardware type updated Sucessfuly!!","response":module_serializer.data},status=status.HTTP_201_CREATED) 
+        return Response({"status_code":401,"responce":module_serializer.errors},status=status.HTTP_400_BAD_REQUEST)  
+         
+ 
+    elif request.method == 'DELETE': 
+        bms_module.delete() 
+        return Response({'message': 'Hardware type was deleted successfully!'}, status=status.HTTP_204_NO_CONTENT)
+    
+    
+    
+    
+
+@api_view(['GET', 'POST', 'DELETE'])
+# @permission_classes([IsAuthenticated])
+def hardware_details(request):
+    if request.method == 'GET':
+        bms_module = BmsHardWareDetails.objects.all()        
+        bms_module_serializer = BmsHardWareDetailsSerializers(bms_module, many=True)
+        return Response({"data":"true","status_code": 200, "message": "Hardware Details Lists ", "response":bms_module_serializer.data},status=status.HTTP_200_OK)
+    
+ 
+    elif request.method == 'POST':
+        data = request.data
+        try:
+            # data['devices_id'] = data.pop('devices_details')
+            data['hardware_type'] = data.pop('hardware_type_id')
+        except:
+            pass
+        
+        module_serializer = BmsHardWareDetailsSerializersPost(data=request.data)
+        if module_serializer.is_valid():
+            module_serializer.save()
+            return Response({"data":"true","status_code": 200, "message": "Hardware Details Added Sucessfuly!!"},status=status.HTTP_201_CREATED) 
+            # return Response({"data":"true","status_code": 200, "message": "Hardware Details Added Sucessfuly!!","response":module_serializer.data},status=status.HTTP_201_CREATED) 
+        return Response({"status_code":401,"responce":module_serializer.errors},status=status.HTTP_400_BAD_REQUEST) 
+    
+    # elif request.method == 'DELETE':
+    #     count = BmsHardwareTypeMaster.objects.all().delete()
+    #     return Response({'message': '{} Trigger was deleted successfully!'.format(count[0])}, status=status.HTTP_204_NO_CONTENT)
+    
+    
+ 
+@api_view(['GET', 'PUT', 'DELETE'])
+# @permission_classes([IsAuthenticated])
+def hardware_details_master(request, pk):
+    try: 
+        bms_module = BmsHardWareDetails.objects.get(pk=pk) 
+    except BmsHardWareDetails.DoesNotExist: 
+        return Response({'message': 'The Hardware Details does not exist'}, status=status.HTTP_404_NOT_FOUND) 
+         
+ 
+    if request.method == 'GET': 
+        module_serializer = BmsHardWareDetailsSerializers(bms_module) 
+        return Response({"data":"true","status_code": 200, "message": "Hardware Details Get Successfully", "response":module_serializer.data},status=status.HTTP_200_OK)  
+ 
+    elif request.method == 'PUT':  
+        data = request.data
+        try:
+            # data['devices_id'] = data.pop('devices_details')
+            data['hardware_type'] = data.pop('hardware_type_id')
+        except:
+            pass
+        module_serializer = BmsHardWareDetailsSerializersPut(bms_module, data=request.data) 
+        if module_serializer.is_valid(): 
+            module_serializer.save() 
+            return Response({"data":"true","status_code": 200, "message": "Hardware Details updated Sucessfuly!!","response":module_serializer.data},status=status.HTTP_201_CREATED) 
+        return Response({"status_code":401,"responce":module_serializer.errors},status=status.HTTP_400_BAD_REQUEST)  
+         
+ 
+    elif request.method == 'DELETE': 
+        bms_module.delete() 
+        return Response({'message': 'Hardware Details was deleted successfully!'}, status=status.HTTP_204_NO_CONTENT)
+
+
+
+    
 
 
 

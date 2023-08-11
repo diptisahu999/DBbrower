@@ -14,9 +14,9 @@ class Bms_floor_masterAdmin(admin.ModelAdmin):
     list_display = ['id', 'floor_name', 'created_at', 'updated_at']
 
 
-@admin.register(BmsDepartmentMaster)
-class Bms_department_masterAdmin(admin.ModelAdmin):
-    list_display = ['id', 'department_name', 'created_at', 'updated_at']
+# @admin.register(BmsDepartmentMaster)
+# class Bms_department_masterAdmin(admin.ModelAdmin):
+#     list_display = ['id', 'department_name', 'created_at', 'updated_at']
 
 
 @admin.register(BmsAreaMaster)
@@ -56,12 +56,8 @@ class Bms_settingsAdmin(admin.ModelAdmin):
 @admin.register(BmsDeviceInformation)
 class Bms_deviceAdmin(admin.ModelAdmin):
     list_display = ['id', 'device_name', 'create_at', 'device_informations',
-                    'status', 'is_used', 'updated_user_details_date']
+                    'status', 'is_used', 'updated_at']
 
-
-@admin.register(BmsHardwareTypeMaster)
-class Bms_hardware_Admin(admin.ModelAdmin):
-    list_display = ['id', 'hardware_name', 'created_at']
 
 
 @admin.register(BmsDeviceTypeMaster)
@@ -74,9 +70,9 @@ class Bms_device_type_admin(admin.ModelAdmin):
 
 @admin.register(BmsDeviceStatusHistory)
 class Bms_device_status_history_admin(admin.ModelAdmin):
-    list_display = ['device_data',
+    list_display = [
                     'device_status',
-                    'date_time']
+                    ]
 
 
 @admin.register(BmsUserAreaCardsList)
@@ -107,4 +103,20 @@ class TriggersAdmin(admin.ModelAdmin):
 class BmsSceneAppliancesDetailsAdmin(admin.ModelAdmin):
     list_display=[
         'id'
+    ]
+    
+    
+    
+@admin.register(BmsHardwareTypeMaster)
+class BmsHardwareTypeMasterAdmin(admin.ModelAdmin):
+    list_display=[
+        'id'
+    ]
+    
+    
+
+@admin.register(BmsHardWareDetails)
+class BmsHardWareDetailsAdmin(admin.ModelAdmin):
+    list_display=[
+        'id','hardware_name'
     ]

@@ -13,7 +13,7 @@ class BmsBuildingMaster(models.Model):
         ("No","No"),
         ("Yes","Yes")
     ]
-    tower_name = models.CharField(max_length=100)
+    tower_name = models.CharField(max_length=100,blank=True)
     status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
     is_deleted=models.CharField(max_length=23,choices=DELETE,default=DELETE[0][0])
     created_at = models.DateTimeField(auto_now_add=True)
@@ -36,8 +36,8 @@ class BmsFloorMaster(models.Model):
         ("No","No"),
         ("Yes","Yes")
     ]
-    tower_data = models.ForeignKey(BmsBuildingMaster,on_delete=models.CASCADE,related_name='floor_data',null=True,blank=True)   ## changeses
-    floor_name = models.CharField(max_length=100)
+    tower= models.ForeignKey(BmsBuildingMaster,on_delete=models.CASCADE,related_name='floor_data',null=True,blank=True)   ## changeses
+    floor_name = models.CharField(max_length=100,blank=True)
     status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
     is_deleted=models.CharField(max_length=23,choices=DELETE,default=DELETE[0][0])
     created_at = models.DateTimeField(auto_now_add=True)
@@ -60,8 +60,8 @@ class BmsAreaMaster(models.Model):
         ("No","No"),
         ("Yes","Yes")
     ]
-    area_name = models.CharField(max_length=100)
-    floor_data = models.ForeignKey(BmsFloorMaster,on_delete=models.CASCADE,related_name='areas_data',null=True,blank=True)
+    area_name = models.CharField(max_length=100,blank=True)
+    floor= models.ForeignKey(BmsFloorMaster,on_delete=models.CASCADE,related_name='areas_data',null=True,blank=True)
     status = models.CharField(max_length=100, choices=STATUS,default=STATUS[0][0])
     is_deleted=models.CharField(max_length=23,choices=DELETE,default=DELETE[0][0])
     created_at = models.DateTimeField(auto_now_add=True)
@@ -72,6 +72,68 @@ class BmsAreaMaster(models.Model):
 
     class Meta():
         db_table = 'bms_area_master '
+        
+        
+        
+
+### 08/06/2024
+
+class BmsHardwareTypeMaster(models.Model):
+    Hardware_choice = [
+        ("Relay", "Relay"),
+        ("Dali", "Dali"),
+        ("CoolMaster", "CoolMaster"),
+        ("IR","IR"),
+        ("CCTV","CCTV")
+    ]
+    STATUS = [
+        ("Active", "Active"),
+        ("In-Active", "In-Active"),
+    ]
+    DELETE=[
+        ("No","No"),
+        ("Yes","Yes")
+    ]
+    hardware_type_name= models.CharField(max_length=12, choices=Hardware_choice, blank=True, null=False)
+    status = models.CharField(max_length=100, choices=STATUS,default=STATUS[0][0])
+    is_deleted=models.CharField(max_length=23,choices=DELETE,default=DELETE[0][0])
+    created_at = models.DateTimeField(auto_now_add=True)
+    # created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now_add=True)
+    # updated_at = models.DateTimeField(auto_now_add=True,default=True)
+    
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta():
+        db_table = 'bms_hardware_type_master'
+        
+        
+class BmsHardWareDetails(models.Model):
+    DELETE=[
+        ("No","No"),
+        ("Yes","Yes")
+    ]
+    
+    STATUS = [
+        ("Active", "Active"),
+        ("In-Active", "In-Active"),
+    ]
+    hardware_name=models.CharField(max_length=23,blank=True)
+    hardware_type=models.ForeignKey(BmsHardwareTypeMaster,on_delete=models.CASCADE,related_name='hardware_type_data')
+    hardware_details=models.JSONField(blank=True)
+    status=models.CharField(max_length=23,choices=STATUS,default=STATUS[0][0])
+    is_deleted=models.CharField(max_length=23,choices=DELETE,default=DELETE[0][0])
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)  
+    
+    
+    def __str__(self):
+        return self.hardware_name
+
+    class Meta():
+        db_table = 'bms_hardware_details'   
         
         
         
@@ -98,16 +160,29 @@ class BmsDeviceInformation(models.Model):
         ("Active", "Active"),
         ("In-Active", "In-Active"),
     ]
+    DELETE=[
+        ("No","No"),
+        ("Yes","Yes")
+    ]
+    
+    # Hardware=[
+    #     ("RL","RL"),
+    #     ("CM","CM"),
+    #     ("IR","IR"),
+    #     ("CCTV","CCTV")
+    # ]
     device_name = models.CharField(max_length=100)
     device_type = models.CharField(max_length=100 ,choices=device_slug,blank=True)
+    hardware_details=models.ForeignKey(BmsHardWareDetails,on_delete=models.CASCADE)
     is_used = models.CharField(
         max_length=23, choices=is_used_STATUS, default=is_used_STATUS[1][1])
     device_informations = models.JSONField(null=True, blank=True)
     status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
+    is_deleted=models.CharField(max_length=23,choices=DELETE,default=DELETE[0][0])
     create_at = models.DateTimeField(default=timezone.now, blank=True)
-    updated_user_details_date = models.DateTimeField(auto_now=True)
+    updated_at= models.DateTimeField(auto_now=True)
     # devices_details = models.ForeignKey(bms_sub_area_master,on_delete=models.CASCADE,related_name='device_data')
-    # hardware_type_id=models.ForeignKey(Bms_hardware_type,on_delete=models.CASCADE,related_name='device')
+    # hardware_type_id=models.ForeignKey(Bms_hardware_type,on_delete=models.CASCADE,related_name='device') 
     
     
     def __str__(self):
@@ -145,8 +220,8 @@ class BmsSubAreaMaster(models.Model):
     ]
     # floor_id=models.ForeignKey(bms_floor_master,on_delete=models.CASCADE)
     # tower_details=models.ForeignKey(bms_building_master,on_delete=models.CASCADE)
-    sub_area_name = models.CharField(max_length=100)
-    area_data = models.ForeignKey(BmsAreaMaster,on_delete=models.CASCADE,related_name='sub_areas_data',null=True,blank=True)
+    sub_area_name = models.CharField(max_length=100,blank=True)
+    area= models.ForeignKey(BmsAreaMaster,on_delete=models.CASCADE,related_name='sub_areas_data',null=True,blank=True)
     on_image_path = models.CharField(max_length=255, blank=True)
     off_image_path = models.CharField(max_length=255, blank=True)
     width = models.CharField(max_length=100, blank=True)
@@ -175,8 +250,9 @@ class BmsLocker(models.Model):
         ("Active", "Active"),
         ("In-Active", "In-Active"),
     ]
+    
+    sub_area= models.ForeignKey(BmsSubAreaMaster,on_delete=models.CASCADE)
     category = models.CharField(max_length=100, choices=CATEGORIES)
-    sub_area_data = models.ForeignKey(BmsSubAreaMaster,on_delete=models.CASCADE)
     locker_name = models.CharField(max_length=100)
     status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
     created_at = models.DateTimeField(auto_now_add=True)
@@ -200,7 +276,7 @@ class BmsAccessControlRfidMaster(models.Model):
         ("Active", "Active"),
         ("In-Active", "In-Active"),
     ]
-    user_data = models.ForeignKey(to='Authenticate.BmsUser',on_delete=models.CASCADE)
+    user= models.ForeignKey(to='Authenticate.BmsUser',on_delete=models.CASCADE)
     rfid_no = models.IntegerField()
     card_type = models.CharField(max_length=100, choices=CARD_TYPES)
     access_area_data = models.ForeignKey(BmsSubAreaMaster,on_delete=models.CASCADE)
@@ -228,7 +304,7 @@ class BmsHistory(models.Model):
         ("Active", "Active"),
         ("In-Active", "In-Active"),
     ]
-    user_data = models.ForeignKey(to='Authenticate.BmsUser',on_delete=models.CASCADE)
+    user= models.ForeignKey(to='Authenticate.BmsUser',on_delete=models.CASCADE)
     type = models.CharField(max_length=100, choices=TYPES)
     description = models.JSONField(default=dict, null=True, blank=True)
     status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
@@ -247,40 +323,18 @@ class BmsSettings(models.Model):
         ("Active", "Active"),
         ("In-Active", "In-Active"),
     ]
-    module_data = models.ForeignKey(to='Authenticate.BmsModuleMaster',on_delete=models.CASCADE)
+    modules_permission= models.ForeignKey(to='Authenticate.BmsModuleMaster',on_delete=models.CASCADE)
     setting_data = models.JSONField(default=dict, null=True)
     status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
     created_at = models.DateTimeField(auto_now_add=True)
-
+    # created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.setting_data
-
     class Meta():
         db_table = 'bms_settings'
 
 
-class BmsHardwareTypeMaster(models.Model):
-    Hardware_choice = [
-        ("Relay", "Relay"),
-        ("Dali", "Dali"),
-        ("CoolMaster", "CoolMaster"),
-    ]
-    
-    STATUS = [
-        ("Active", "Active"),
-        ("In-Active", "In-Active"),
-    ]
-    id = models.AutoField(primary_key=True, unique=True)
-    hardware_name = models.CharField(
-        max_length=12, choices=Hardware_choice, blank=True, null=False)
-    status = models.CharField(max_length=100, choices=STATUS,default=STATUS[0][0])
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.hardware_name
-
-    class Meta():
-        db_table = 'bms_hardware_type_master'
 
 class BmsDeviceTypeMaster(models.Model):
     device_slug = [("LED","LED"),
@@ -302,11 +356,19 @@ class BmsDeviceTypeMaster(models.Model):
         ("In-Active", "In-Active"),
     ]
     
-    hardware_type_data = models.ForeignKey(BmsHardwareTypeMaster,on_delete=models.CASCADE)
+    DELETE=[
+        ("No","No"),
+        ("Yes","Yes")
+    ]
+    
+    hardware_type= models.ForeignKey(BmsHardwareTypeMaster,on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     device_type_slug = models.CharField(max_length=100,choices=device_slug)
     status = models.CharField(max_length=100, choices=STATUS,default=STATUS[0][0])
+    is_deleted=models.CharField(max_length=23,choices=DELETE,default=DELETE[0][0])
     created_at = models.DateTimeField(auto_now_add=True)
+    # created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now_add=True)
      
     def __str__(self):
         return self.name
@@ -318,10 +380,11 @@ class BmsDeviceTypeMaster(models.Model):
     
 
 class BmsDeviceStatusHistory(models.Model):
-    device_data = models.ForeignKey(BmsSubAreaMaster,on_delete=models.CASCADE)
+    device= models.ForeignKey(BmsSubAreaMaster,on_delete=models.CASCADE)
     device_status = models.BooleanField(default=False)
-    user_data = models.ForeignKey(to='Authenticate.BmsUser',on_delete=models.CASCADE)
-    date_time = models.DateTimeField(auto_now=True)
+    user= models.ForeignKey(to='Authenticate.BmsUser',on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return str(self.device_data)
@@ -335,7 +398,7 @@ class BmsUserAreaCardsList(models.Model):
         ("Active", "Active"),
         ("In-Active", "In-Active"),
     ]
-    user_data = models.ForeignKey(to='Authenticate.BmsUser',on_delete=models.CASCADE)
+    user= models.ForeignKey(to='Authenticate.BmsUser',on_delete=models.CASCADE)
     card_id = models.IntegerField()
     column_no = models.IntegerField(default=1)
     user_card_name = models.CharField(max_length=100, blank=True)
@@ -344,6 +407,7 @@ class BmsUserAreaCardsList(models.Model):
     card_slug = models.CharField(max_length=100, blank=True)
     status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
     created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now_add=True)
     # floor_id=models.ForeignKey(Bms_floor_master,on_delete=models.CASCADE)
     status = models.BooleanField(default=False)
 
@@ -372,7 +436,6 @@ class BmsScenes(models.Model):
         ("Yes","Yes")
     ]
     
-    
     scene_name =models.CharField(max_length=100, blank=True)
     status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])
     is_deleted=models.CharField(max_length=23,choices=DELETE,default=DELETE[0][0])
@@ -399,8 +462,8 @@ class BmsSceneAppliancesDetails(models.Model):
     ]
     scene=models.ForeignKey(BmsScenes,on_delete=models.CASCADE,related_name='scene_appliance_details')
     device_type_slug=models.CharField(max_length=23,blank=True)
-    component_id=models.ForeignKey(BmsDeviceInformation,on_delete=models.CASCADE)
-    componet_name= models.CharField(max_length=23,default=True)
+    component=models.ForeignKey(BmsDeviceInformation,on_delete=models.CASCADE)
+    componet_name= models.CharField(max_length=23)
     operation_type=models.CharField(max_length=23,blank=True)
     operation_value=models.CharField(max_length=23,blank=True)
     status = models.CharField(max_length=100, choices=STATUS, default=STATUS[0][0])

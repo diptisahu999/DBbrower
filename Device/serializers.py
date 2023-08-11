@@ -21,11 +21,19 @@ class BmsBuildingMasterSerializerPost(serializers.ModelSerializer):
 
 # GET Floor
 
+class BmsBuildingMasterSerializer1111(serializers.ModelSerializer):
+    class Meta:
+        model = BmsBuildingMaster
+        fields = ['id','tower_name','created_at','updated_at']
+        depth = 10
+
 
 class BmsFloorMasterSerializer(serializers.ModelSerializer):
+    tower_data = BmsBuildingMasterSerializer1111(source='tower', read_only=True)
+
     class Meta:
         model = BmsFloorMaster
-        fields ='__all__'
+        fields = ['id','floor_name','status','created_at','updated_at','tower_data']
         depth = 10
         
 
@@ -56,9 +64,11 @@ class BmsDepartmentMasterSerializerPost(serializers.ModelSerializer):
 
 # GET area
 class BmsAreaMasterSerializer(serializers.ModelSerializer):
+    floor_data=BmsFloorMasterSerializer(source='floor',read_only=True)
     class Meta:
         model = BmsAreaMaster
-        fields = '__all__'
+        # fields = '__all__'
+        fields=['id','area_name','status','created_at','updated_at','floor_data']
         depth = 10
 
 
@@ -103,6 +113,11 @@ class BmsTriggerSerializersPost(serializers.ModelSerializer):
         
         
 
+class BmsDeviceInformationSerializerPo(serializers.ModelSerializer):
+    class Meta:
+        model = BmsDeviceInformation
+        fields = '__all__'
+
 
 # post area
 class BmsAreaMasterSerializerPost(serializers.ModelSerializer):
@@ -113,10 +128,20 @@ class BmsAreaMasterSerializerPost(serializers.ModelSerializer):
 
 
 # GET Sub_area
+
+class BmsDeviceInformationSerializerPo(serializers.ModelSerializer):
+    class Meta:
+        model = BmsDeviceInformation
+        # fields = '__all__'
+        fields=['id','device_name','device_type','is_used','status','is_deleted','create_at','updated_at','device_informations']
+
 class BmsSubAreaMasterSerializer(serializers.ModelSerializer):
+    devices_details=BmsDeviceInformationSerializerPo(many=True)
+    area_data=BmsAreaMasterSerializer(source='area', read_only=True)
     class Meta:
         model = BmsSubAreaMaster
-        fields = '__all__'
+        # fields = '__all__'
+        fields = ['id','sub_area_name','on_image_path','off_image_path','width','height','seating_capacity','status','area_data','devices_details']
         depth = 10
 
 
@@ -128,12 +153,20 @@ class BmsSubAreaMasterSerializerPost(serializers.ModelSerializer):
 
 
 # GET Locker
+class BmsSubAreaMasterSerializerss(serializers.ModelSerializer):
+    # devices_details=BmsDeviceInformationSerializerPo(many=True)
+    class Meta:
+        model = BmsSubAreaMaster
+        # fields = '__all__'
+        fields = ['id','sub_area_name','on_image_path','off_image_path','width','height','seating_capacity','status','is_deleted']
+        # depth = 10
 class BmsLockerSerializer(serializers.ModelSerializer):
-    # sub_area_id = BmsSubAreaMasterSerializer(many=True, read_only=True)
+    sub_area_details= BmsSubAreaMasterSerializerss(source='sub_area',read_only=True)
     class Meta:
         model = BmsLocker
-        fields = '__all__'
-        depth = 10
+        # fields = '__all__'
+        fields=['id','category','locker_name','status','sub_area_details']
+        # depth = 10
 
 
 # post Locker
@@ -168,11 +201,35 @@ class BmsDeviceTypeMasterSerializerPost(serializers.ModelSerializer):
 
 # GET Device informations
 class BmsDeviceInformationSerializer(serializers.ModelSerializer):
+    hardware_details_id = serializers.SerializerMethodField()
+    hardware_type_name = serializers.SerializerMethodField()
+    hardware_name = serializers.SerializerMethodField()
+    
+    
 
     class Meta:
         model = BmsDeviceInformation
-        fields = '__all__'
-        depth = 10
+        fields = ['id','device_name','device_type','hardware_details_id','hardware_type_name','hardware_name','is_used','device_informations','status','is_deleted','create_at']
+        # depth = 10
+        
+        
+    def get_hardware_details_id(self, obj):
+        if obj.hardware_details:
+            return obj.hardware_details.id
+        return None
+    
+    
+    def get_hardware_type_name(self, obj):
+        if obj.hardware_details:
+            return obj.hardware_details.hardware_type.hardware_type_name
+        return None
+    
+    
+    def get_hardware_name(self, obj):
+        if obj.hardware_details:
+            return obj.hardware_details.hardware_name
+        return None
+        
 # post Device Informations
 
 
@@ -214,7 +271,7 @@ class BmsUserAreaCardsListSerializerPut(serializers.ModelSerializer):
     # user_data = serializers.IntegerField(source='user_id')
     class Meta:
         model = BmsUserAreaCardsList
-        fields = ['user_data','card_id','column_no','user_card_name','card_title','card_slug','status','device_details']
+        fields = ['user','card_id','column_no','user_card_name','card_title','card_slug','status','device_details']
         # depth = 1
 
 
@@ -223,14 +280,27 @@ class BmsUserAreaCardsListSerializerPut(serializers.ModelSerializer):
 ## 4/5/2023 
 
 
+# class BmsSubAreaMasterSerializers(serializers.ModelSerializer):
+#     # floor_id = BmsFloorMasterSerializer(many=True, read_only=True)
+#     # area_id = BmsAreaMasterSerializer(many=True, read_only=True)
+#     class Meta:
+#         model = BmsSubAreaMaster
+#         fields = ['id','sub_area_name','width','height','status','on_image_path','off_image_path','devices_details']
+#         depth = 10
 
+
+class BmsDeviceInformationSerializerPo(serializers.ModelSerializer):
+    class Meta:
+        model = BmsDeviceInformation
+        # fields = '__all__'
+        fields=['device_name','device_type','is_used','status','is_deleted','create_at','updated_at','device_informations']
 
 class BmsSubAreaMasterSerializers(serializers.ModelSerializer):
-    # floor_id = BmsFloorMasterSerializer(many=True, read_only=True)
-    # area_id = BmsAreaMasterSerializer(many=True, read_only=True)
+    devices_details=BmsDeviceInformationSerializerPo(many=True)
     class Meta:
         model = BmsSubAreaMaster
-        fields = ['id','sub_area_name','width','height','status','on_image_path','off_image_path','devices_details']
+        # fields = '__all__'
+        fields = ['sub_area_name','on_image_path','off_image_path','width','height','seating_capacity','status','is_deleted','devices_details']
         depth = 10
 
 
@@ -274,7 +344,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = BmsBuildingMaster
         # fields = '__all__'
-        fields=['id','tower_name','status','created_at','updated_at','floor_data']
+        fields=['id','tower_name','status','created_at','updated_at','is_deleted','floor_data']
         # depth = 10
 
     def create(self, validated_data):
@@ -297,7 +367,7 @@ class SencesSerializers(serializers.ModelSerializer):
     class Meta:
         model=BmsSceneAppliancesDetails
         # fields='__all__' 
-        fields=['device_type_slug','component_id','operation_type','operation_value']
+        fields=['device_type_slug','component_id','component_name','operation_type','operation_value']
         # depth = 1
 
         
@@ -316,3 +386,69 @@ class ProfileSerializerssss(serializers.ModelSerializer):
         for detail in scene_appliance_details:
             BmsSceneAppliancesDetails.objects.create(scene=scene_instance, **detail)
         return scene_instance
+    
+    
+    
+    
+    
+## user History
+
+
+class UserHistorySerializers(serializers.ModelSerializer):
+    class Meta:
+        model=BmsHistory
+        fields='__all__' 
+        # fields=['device_type_slug','component_id','operation_type','operation_value']
+        # depth = 1
+ 
+ 
+### 08/06/2024       
+        
+class BmsHardwareTypeMasterSerializers(serializers.ModelSerializer):
+    
+    class Meta:
+        model=BmsHardwareTypeMaster
+        fields='__all__'
+        
+        
+class BmsHardWareDetailsSerializers(serializers.ModelSerializer):
+    hardware_type_name = serializers.SerializerMethodField()
+    hardware_type_id= serializers.SerializerMethodField()
+    
+
+    class Meta:
+        model = BmsHardWareDetails
+        fields = ['id', 'hardware_type_name','hardware_type_id', 'hardware_name', 'hardware_details', 'status', 'is_deleted', 'updated_at']
+
+    def get_hardware_type_name(self, obj):
+        if obj.hardware_type:
+            return obj.hardware_type.hardware_type_name
+        return None
+    
+    def get_hardware_type_id(self, obj):
+        if obj.hardware_type:
+            return obj.hardware_type.id
+        return None
+
+        
+        
+class BmsHardWareDetailsSerializersPost(serializers.ModelSerializer):
+    # hardware_type_data = BmsHardwareTypeMasterSerializers(source='hardware_type', read_only=True)
+     # hardware_type= serializers.PrimaryKeyRelatedField(queryset=BmsHardwareTypeMaster.objects.all())
+    
+    class Meta:
+        model=BmsHardWareDetails
+        # fields='__all__'
+        fields=['id','hardware_name','hardware_details','status','updated_at','hardware_type']
+        
+        
+        
+
+class BmsHardWareDetailsSerializersPut(serializers.ModelSerializer):
+    # hardware_type_data = BmsHardwareTypeMasterSerializers(source='hardware_type', read_only=True)
+     # hardware_type= serializers.PrimaryKeyRelatedField(queryset=BmsHardwareTypeMaster.objects.all())
+    
+    class Meta:
+        model=BmsHardWareDetails
+        fields='__all__'
+        # fields=['id','hardware_name','hardware_details','status','updated_at','hardware_type']

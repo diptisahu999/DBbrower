@@ -13,8 +13,8 @@ urlpatterns = [
     path('manage_bms_floor', views.floor_list),
     path('manage_bms_floor/<int:pk>', views.floor_details),
     
-    path('manage_bms_department', views.department_list),
-    path('manage_bms_department/<int:pk>', views.department),
+    # path('manage_bms_department', views.department_list),
+    # path('manage_bms_department/<int:pk>', views.department),
 
     path('manage_bms_area', views.bms_area_list),
     path('manage_bms_area/<int:pk>', views.bms_area_list_1),
@@ -39,7 +39,18 @@ urlpatterns = [
     path('manage_scences_list/<int:pk>', views.sences_datails),
     
     path('manage_bms_triggers', views.trigger),
-    path('manage_bms_triggers/<int:pk>', views.trigger_details)
+    path('manage_bms_triggers/<int:pk>', views.trigger_details),
+    
+    
+    # path('manage_bms_user_history', views.user_history),
+    
+    
+    path('manage_bms_hardware_type', views.hardware_master),
+    path('manage_bms_hardware_type/<int:pk>', views.hardware_type_master),
+    
+    path('manage_bms_hardware_details', views.hardware_details),
+    path('manage_bms_hardware_details/<int:pk>', views.hardware_details_master),
+    
     # path('get_bms_all_list/', views.bms_building_floor_area_subarea_device_Serializer_list),
 	# path('livecam_feed/', camera.livecam_feed, name='livecam_feed'),
 

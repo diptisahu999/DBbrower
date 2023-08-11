@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from Authenticate.models import BmsModuleMaster, BmsRole, BmsUserType, BmsUser, BmsUsersDetail, BmsRolesDevicesInformation
-from Device.models import BmsDepartmentMaster, BmsLocker, BmsUserAreaCardsList
+from Device.models import BmsDepartmentMaster, BmsLocker, BmsUserAreaCardsList,BmsDeviceInformation
 from Device.serializers import BmsUserAreaCardsListSerializer
 
 
@@ -10,13 +10,24 @@ class ModuleSerializer(serializers.ModelSerializer):
         fields = ["id",
                   "module_name",
                   "module_slug",
-                  "status",]
+                  "status"]
+        
+        
+# GET Role
+
+class BmsDeviceInformationSerializerPo(serializers.ModelSerializer):
+    class Meta:
+        model = BmsDeviceInformation
+        # fields = '__all__'
+        fields=['id','device_name','device_type','is_used','status','is_deleted','create_at','updated_at','device_informations']
 
 
 class RoleSerializer(serializers.ModelSerializer):
+    device_data=BmsDeviceInformationSerializerPo(many=True)
+    
     class Meta:
         model = BmsRole
-        fields = '__all__'
+        fields = ['id','role_name','created_at','updated_at','modules_permission','device_data']
         depth = 10
 
 
@@ -136,8 +147,8 @@ class BmsUserDetailsSerializers(serializers.ModelSerializer):
         role_data = RoleSerializer(many=True, read_only=True)
         model = BmsUser
         fields = ['id', 'user_email', 'user_password', 'domain_type', 'status','role_data',
-                  'created_user_date',
-                  'updated_user_date',
+                  'created_at',
+                  'updated_at',
                   ]
         # depth = 10
 
@@ -147,7 +158,7 @@ class BmsUserDetailsSerializerPost(serializers.ModelSerializer):
     class Meta:
         # role_data = RoleSerializer(many=True, read_only=True)
         model = BmsUser
-        # fields = ['id', 'user_email', 'user_password', 'domain_type'  ]
+        # fields = ['is_deleted']
         fields ='__all__'
              
                 
@@ -185,13 +196,13 @@ class RoleSerializerss(serializers.ModelSerializer):
         depth = 10
 
 class BmsUserDetailsSerializers(serializers.ModelSerializer):
-    role_data = RoleSerializerss(read_only=True)
-    user_cards_data = serializers.SerializerMethodField()
+    role_data = RoleSerializerss(source='role_id', read_only=True)
+    # user_cards_data = serializers.SerializerMethodField()
     class Meta:
         model = BmsUser
         fields = ['id', 'user_email', 'domain_type', 'status',
-                  'created_user_date', 'updated_user_date',
-                  'role_data', 'user_cards_data'
+                  'created_at', 'updated_at',
+                  'role_data',
                   ]
         depth = 10
 
@@ -239,11 +250,10 @@ class BmsUserSerializer_DeviceDetails(serializers.ModelSerializer):
 class LoginSerializer(serializers.ModelSerializer):
 
     class Meta:
-        # role_data = RoleSerializer(many=True, read_only=True)
         model = BmsUser
         fields = ['id', 'user_email', 'user_password', 'domain_type', 'status',
-                  'created_user_date',
-                  'updated_user_date',
+                  'created_at',
+                  'updated_at',
                   #   'modules_data',
                   #     'role_name',
                   ]
@@ -263,4 +273,4 @@ class BmsUserSerializerUser(serializers.ModelSerializer):
 class BmsUserTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = BmsUserType
-        fields = '__all__'
+        fields = ['id','user_type_name','has_role','status']

@@ -13,8 +13,8 @@ class BmsModuleMaster(models.Model):
     module_name=models.CharField(max_length=254)
     module_slug=models.CharField(max_length=254)
     status = models.CharField(max_length=100,choices=STATUS ,default=STATUS[0][0])
-    created_module_date=models.DateTimeField(default=timezone.now)
-    updated_module_date=models.DateTimeField(auto_now=True)
+    created_at=models.DateTimeField(default=timezone.now)
+    updated_at=models.DateTimeField(auto_now=True)
     
     def __str__(self):
         return self.module_name
@@ -34,8 +34,8 @@ class BmsRole(models.Model):
     modules_permission=models.ManyToManyField(BmsModuleMaster,blank=True)
     role_name=models.CharField(max_length=100,blank=True)
     device_data=models.ManyToManyField(BmsDeviceInformation,blank=True)
-    created_role_date=models.DateTimeField(default=timezone.now)
-    updated_role_date=models.DateTimeField(auto_now=True)
+    created_at=models.DateTimeField(default=timezone.now)
+    updated_at=models.DateTimeField(auto_now=True)
     
     def __str__(self):
         return self.role_name
@@ -47,7 +47,7 @@ class BmsRolesDevicesInformation(models.Model):
     role_data=models.ForeignKey(BmsRole,on_delete=models.CASCADE)
     # subarea_data=models.ManyToManyField(BmsSubAreaMaster,blank= True , null=True)
     device_information_data=models.ManyToManyField(BmsDeviceInformation)
-    created_date=models.DateTimeField(default=timezone.now)
+    created_at=models.DateTimeField(default=timezone.now)
     # updatated_date=models.DateTimeField(default=timezone.now)
     
     
@@ -69,9 +69,15 @@ class BmsUserType(models.Model):
         ("true","true"),
         ("false","false")
              ]
+    
+    STATUS= [
+        ("Active","Active"),
+        ("In-Active","In-Active"),
+    ]
     user_type_name=models.CharField(max_length=23,default=True,choices=USERTYPE)
     has_role=models.CharField(max_length=23,choices=HasRole,default=HasRole[1][1])
-    created_user_type_date=models.DateTimeField(default=timezone.now)
+    status = models.CharField(max_length=100,choices=STATUS,default=STATUS[0][0])
+    created_at=models.DateTimeField(default=timezone.now)
     
     def __str__(self):
         return str(self.user_type_name)
@@ -94,16 +100,16 @@ class BmsUser(models.Model):
         ("Yes","Yes"),
         ("No","No")
     ]
-    user_type_id=models.ForeignKey(BmsUserType,related_name='bms_use_type',blank=True, on_delete=models.CASCADE,null=True)
-    role_id=models.ForeignKey(BmsRole,blank=True,related_name='bms_role', on_delete=models.CASCADE, default=True)
-    user_email=models.EmailField()
-    user_password=models.CharField(max_length=254)
+    user_type=models.ForeignKey(BmsUserType,related_name='bms_use_type',blank=True, on_delete=models.CASCADE,null=True)
+    role=models.ForeignKey(BmsRole,blank=True,related_name='bms_role', on_delete=models.CASCADE,)
+    user_email=models.EmailField(blank=True)
+    user_password=models.CharField(max_length=254,blank=True)
     domain_type=models.CharField(max_length=22,choices=DOMAIN, blank=True)
     status = models.CharField(max_length=100,choices=STATUS,default=STATUS[0][0])
     is_deleted=models.CharField(max_length=23,choices=DELETE,default=DELETE[1][1])
     # status = models.BooleanField(default=False)
-    created_user_date=models.DateTimeField(default=timezone.now)
-    updated_user_date=models.DateTimeField(auto_now=True)
+    created_at=models.DateTimeField(default=timezone.now)
+    updated_at=models.DateTimeField(auto_now=True)
     
     
     def __str__(self):
@@ -128,25 +134,25 @@ class BmsUsersDetail(models.Model):
         ("Yes","Yes"),
         ("No","No")
     ]
-    user_data=models.ForeignKey(BmsUser,related_name='abc', on_delete=models.CASCADE,null=True)
+    user=models.ForeignKey(BmsUser,related_name='abc', on_delete=models.CASCADE,null=True,blank=True)
     # department_data=models.ForeignKey(BmsDepartmentMaster,related_name='bms_department', on_delete=models.CASCADE ,null=True, blank=True)
-    locker_data=models.ForeignKey(BmsLocker,related_name='bms_locker', on_delete=models.CASCADE,null=True)
-    first_name=models.CharField(max_length=254)
-    last_name=models.CharField(max_length=254)
+    locker_data=models.ForeignKey(BmsLocker,related_name='bms_locker', on_delete=models.CASCADE,null=True,blank=True)
+    first_name=models.CharField(max_length=254,blank=True)
+    last_name=models.CharField(max_length=254,blank=True)
     image=models.ImageField(upload_to ='uploads/', blank=True)
-    phone_no=models.CharField(max_length=16)
-    dob=models.DateField(auto_now_add=True)
-    address=models.TextField(max_length=2321,null=True)
+    phone_no=models.CharField(max_length=16,blank=True)
+    dob=models.DateField(auto_now_add=True,blank=True)
+    address=models.TextField(max_length=2321,null=True,blank=True)
     id_proof=models.ImageField(upload_to='uplodes/',blank=True)
     visiting_card=models.ImageField(upload_to='uplodes/',blank=True)
-    wallet_balance=models.CharField(max_length=909)
+    wallet_balance=models.CharField(max_length=909,blank=True)
     shift_start_time=models.DateTimeField(auto_now=True)
     shift_end_time=models.DateTimeField(default=timezone.now)
-    has_vehicle=models.CharField(max_length=23,choices=VEHICLE)
+    has_vehicle=models.CharField(max_length=23,choices=VEHICLE,blank=True)
     status = models.CharField(max_length=100,choices=STATUS , default=STATUS[0][0])
     is_deleted=models.CharField(max_length=23,choices=DELETE,default=DELETE[1][1])
-    created_user_details_date=models.DateTimeField(default=timezone.now)
-    updated_user_details_date=models.DateTimeField(auto_now=True)
+    created_at=models.DateTimeField(default=timezone.now)
+    updated_at=models.DateTimeField(auto_now=True)
     
     def __str__(self):
         return str(self.id)
@@ -157,9 +163,9 @@ class BmsUsersDetail(models.Model):
 
 
 class BmsUserWallet(models.Model):
-    user_data=models.ForeignKey(BmsUser, on_delete=models.CASCADE)
+    user=models.ForeignKey(BmsUser, on_delete=models.CASCADE)
     wallet_balance=models.CharField(max_length=23)
-    created_date=models.DateTimeField(default=timezone.now)
+    created_at=models.DateTimeField(default=timezone.now)
     
     
     def __str__(self) -> str:
@@ -185,7 +191,7 @@ class BmsUserWalletTransaction(models.Model):
         ("Car Parking","Car Parking"),
         ("Food","Food"),   
     ]
-    user_id=models.ForeignKey(BmsUser, on_delete=models.CASCADE)
+    user=models.ForeignKey(BmsUser, on_delete=models.CASCADE)
     type=models.CharField(max_length=23,choices=TYPE)
     transaction_type=models.CharField(max_length=23,choices=STATUS)
     source=models.CharField(max_length=23,choices=SOURCE)
@@ -217,7 +223,7 @@ class BmsUserVehiclesDetail(models.Model):
         ("Yes","Yes"),
         ("No","No")
     ]
-    user_details_id=models.ForeignKey(BmsUser, on_delete=models.CASCADE)
+    user=models.ForeignKey(BmsUser, on_delete=models.CASCADE)
     type=models.CharField(max_length=23,choices=STATUS)
     vehicle_no=models.CharField(max_length=23)
     driver_name=models.CharField(max_length=23)
@@ -239,14 +245,14 @@ class BmsUserHasAreaAcces(models.Model):
         ("Yes","Yes"),
         ("No","No")
     ]
-    user_details_id=models.ForeignKey(BmsUser, on_delete=models.CASCADE)
-    building_id=models.ForeignKey(BmsBuildingMaster, on_delete=models.CASCADE)
-    floor_id=models.ForeignKey(BmsFloorMaster, on_delete=models.CASCADE)
-    sub_area_id=models.ForeignKey(BmsSubAreaMaster, on_delete=models.CASCADE)
-    device_id=models.ForeignKey(BmsDeviceInformation, on_delete=models.CASCADE)
+    user=models.ForeignKey(BmsUser, on_delete=models.CASCADE)
+    building=models.ForeignKey(BmsBuildingMaster, on_delete=models.CASCADE)
+    floor=models.ForeignKey(BmsFloorMaster, on_delete=models.CASCADE)
+    sub_area=models.ForeignKey(BmsSubAreaMaster, on_delete=models.CASCADE)
+    device=models.ForeignKey(BmsDeviceInformation, on_delete=models.CASCADE)
     status=models.BooleanField(default=False)
     is_deleted=models.CharField(max_length=23,choices=DELETE,default=DELETE[1][1])
-    created_date=models.DateTimeField(default=timezone.now)
+    created_at=models.DateTimeField(default=timezone.now)
     
     # def __str__(self):
     #     return str(self.user_details_id)

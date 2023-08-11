@@ -1,7 +1,7 @@
 from django.db import models
 
 # Create your models here.
-class Bms_inventory_category(models.Model):
+class BmsInventoryCategory(models.Model):
     STATUS= [
         ("A","Active"),
         ("N","In-Active"),
@@ -17,7 +17,7 @@ class Bms_inventory_category(models.Model):
     class Meta():
         db_table='inventory_tbl'
         
-class Bms_item_details(models.Model):
+class BmsItemDetails(models.Model):
     ORDER=[
         ("M","Manual"),
         ("A","Amazon"),
@@ -29,7 +29,7 @@ class Bms_item_details(models.Model):
         ("N","In-Active"),
     ]
     
-    category_id=models.ManyToManyField(Bms_inventory_category, related_name='items')
+    category=models.ManyToManyField(BmsInventoryCategory, related_name='items')
     item_name=models.CharField(max_length=100)
     item_description=models.TextField(max_length=300)
     item_image=models.ImageField(upload_to='uploads/')
@@ -48,8 +48,8 @@ class Bms_item_details(models.Model):
     class Meta():
         db_table='item_details_tbl'
         
-class Bms_manage_inventory_stock(models.Model):
-    item_id=models.ManyToManyField(Bms_item_details, related_name='manage_stock')
+class BmsManageInventoryStock(models.Model):
+    item=models.ManyToManyField(BmsItemDetails, related_name='manage_stock')
     supplier_name=models.CharField(max_length=100)
     stock_quantity=models.FloatField()
     unit=models.CharField(max_length=10)

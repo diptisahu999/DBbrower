@@ -15,6 +15,13 @@ from Device.serializers import *
 from Device.models import BmsSubAreaMaster
 import numpy as np
 
+
+
+import time
+import requests
+import schedule
+
+
 # login api
 
 
@@ -77,9 +84,9 @@ def user_list(request):
         # input("111")   
         print(request.data)
         data = request.data
-        data["user_type_data"] = data.pop("user_type_id")
-        data["role_data"] = data.pop("role_id")
-        print(request.data)
+        # data["user_type_data"] = data.pop("user_type_id")
+        # data["role_data"] = data.pop("role_id")
+        # print(request.data)
         # a= input("hello world")
 
 
@@ -170,18 +177,26 @@ def user(request, pk):
         
  
     elif request.method == 'PUT':  
-        
-
-
-
-        
-        bms_uses_serializer = BmsUserDetailsSerializer(bms_users, data=request.data) 
-        if bms_uses_serializer.is_valid(): 
-            bms_uses_serializer.save() 
-            # return Response(bms_uses_serializer.data) 
-            return Response({"data":"true","status_code": 200, "message": "User Updated Successfully", "response":bms_uses_serializer.data},status=status.HTTP_201_CREATED)
+        data = request.data
+        bms_uses_serializer = BmsUserDetailsSerializerPost(bms_users, data=data)
+        try:
+            const_data=request.data
+            user_detail= const_data['user_details']
+            Bms_user_detail = BmsUsersDetail.objects.get(pk=user_detail['id']) 
             
-        return Response({"status_code":401,"responce":bms_uses_serializer.errors},status=status.HTTP_400_BAD_REQUEST)  
+            bms_user_Details_serializer = BmsUserSerializerss(Bms_user_detail,data=user_detail)
+            if bms_user_Details_serializer.is_valid() & bms_uses_serializer.is_valid():
+                bms_user_Details_serializer.save()
+                bms_uses_serializer.save()
+                # return Response(bms_uses_serializer.data) 
+                return Response({"data":"true","status_code": 200, "message": "User Updated Successfully"},status=status.HTTP_201_CREATED)
+        except:
+            bms_uses_serializer.is_valid()
+            bms_uses_serializer.save()
+            return Response({"data":"true","status_code": 200, "message": "User Updated Successfully"},status=status.HTTP_201_CREATED)
+            
+        return Response({"status_code":401,"responce":[bms_uses_serializer.errors ,bms_user_Details_serializer.errors]},status=status.HTTP_400_BAD_REQUEST)  
+ 
  
     # elif request.method == 'DELETE': 
     #     bms_users.delete() 
@@ -412,7 +427,7 @@ def role_detail(request, pk):
 # @permission_classes([IsAuthenticated])
 def user_details_list(request):
     if request.method == 'GET':
-        user_details = BmsUsersDetail.objects.all()
+        user_details = BmsUsersDetail.objects.filter(is_deleted="No")
         user_details_serializer = BmsUserSerializer(user_details, many=True)
         # return JsonResponse(tutorials_serializer.data, safe=False)
         return Response({"data":"true","status_code": 200, "message": "User Profile Details Lists", "response":user_details_serializer.data},status=status.HTTP_200_OK)
@@ -608,7 +623,6 @@ def get_tower_list(request):
         # print(data['user_id'])
 
         try:
-            print(data ,"line 531")
             user_details = BmsUser.objects.get(pk=data['user_id'])
         except BmsUser.DoesNotExist:
             return Response({'message': 'The User details do not exist'}, status=status.HTTP_404_NOT_FOUND)
@@ -620,7 +634,7 @@ def get_tower_list(request):
         # f= BmsSubAreaMasterSerializer()
         # print(f.data)
 
-        user_devices_data = (a["role_data"]["device_data"])
+        user_devices_data = (a["role"]["device_data"])
         user_devices_data_list = []
         # print(user_devices_data_list)
         for i in user_devices_data:
@@ -731,7 +745,7 @@ def get_tower_list(request):
 def get_tower_device_data(request):
 
     if request.method == 'GET': 
-        return Response({"data":"true","status_code": 200, "response":"This Method not Allowed "}) 
+        return Response({"data":"true","status_code": 200, "response":"This Method not Allowed"}) 
 
 
     elif request.method == 'POST':
@@ -754,7 +768,7 @@ def get_tower_device_data(request):
         # f= BmsSubAreaMasterSerializer()
         # print(f.data)
 
-        user_devices_data = (a["role_data"]["device_data"])
+        user_devices_data = (a["role"]["device_data"])
         user_devices_data_list = []
         for i in user_devices_data:
             
@@ -863,7 +877,7 @@ def get_floor_device_data(request):
         # f= BmsSubAreaMasterSerializer()
         # print(f.data)
 
-        user_devices_data = (a["role_data"]["device_data"])
+        user_devices_data = (a["role_id"]["device_data"])
      
         # f= BmsSubAreaMasterSerializer()
         # print(f.data)
@@ -970,7 +984,7 @@ def get_area_device_data(request):
         # f= BmsSubAreaMasterSerializer()
         # print(f.data)
 
-        user_devices_data = (a["role_data"]["device_data"])
+        user_devices_data = (a["role_id"]["device_data"])
         user_devices_data_list = []
         for i in user_devices_data:
             
@@ -1072,7 +1086,7 @@ def get_device_data(request):
         # f= BmsSubAreaMasterSerializer()
         # print(a)
 
-        user_devices_data = (a["user_data"]["role_data"]["device_data"])
+        user_devices_data = (a["user_data"]["role_id"]["device_data"])
         user_devices_data_list = []
         for i in user_devices_data:
             # print(i)
@@ -1146,7 +1160,7 @@ def get_device_data(request):
 @api_view(['GET'])
 def UserTypeList(request):
     if request.method == 'GET':
-        bms_users = BmsUserType.objects.all()
+        bms_users = BmsUserType.objects.filter(status="Active")
         bms_users_serializer = BmsUserTypeSerializer(bms_users, many=True)
         return Response({"data": "true", "status_code": 200, "message": "User Type Lists", "response": bms_users_serializer.data}, status=status.HTTP_200_OK)
     
@@ -1163,3 +1177,72 @@ def get_device(request):
         bms_users = BmsDeviceInformation.objects.filter(device_type=device_type,is_used=is_used,status =device_status)
         bms_users_serializer = BmsDeviceInformationSerializer(bms_users, many=True)
         return Response({"data": "true", "status_code": 200, "message": "Device Lists", "response": bms_users_serializer.data}, status=status.HTTP_200_OK)
+    
+    
+    
+    
+    
+@api_view(['GET'])    
+def geet(request):
+    if request.method=='GET':    
+        # Set the time limit in seconds
+        time_limit = 4  # 1 hour
+
+        # Define the data to be posted
+        data =    {
+                    
+                    "module_name": "Inventory",
+                    "module_slug": "Inventory",
+                    "status": "Active"
+                }
+
+        # Set the URL of your Django API endpoint
+        url = 'http://127.0.0.1:9999/manage_module_list'
+
+        # Function to post data
+        def post_data():
+            try:
+                # Send a POST request to the Django API
+                response = requests.post(url, data=data)
+                if response.status_code == 201:
+                    print("Data posted successfully!")
+                else:
+                    print("Failed to post data. Status code:", response.status_code)
+            except requests.exceptions.RequestException as e:
+                print("An error occurred:", e)
+
+        # Schedule the data posting
+        schedule.every(1).seconds.do(post_data)
+        # schedule.every(1).minute.do(post_data)
+
+
+        schedule.every(10).minutes.do(post_data)
+
+        # After every hour geeks() is called.
+        schedule.every().hour.do(post_data)
+
+        # Every day at 12am or 00:00 time bedtime() is called.
+        schedule.every().day.at("00:00").do(post_data)
+
+        # After every 5 to 10mins in between run work()
+        schedule.every(5).to(10).minutes.do(post_data)
+
+        # Every monday good_luck() is called
+        schedule.every().monday.do(post_data)
+
+        # Every tuesday at 18:00 sudo_placement() is called
+        schedule.every().tuesday.at("18:00").do(post_data)
+
+
+        # Start time
+        start_time = time.time()
+
+        # Loop until the time limit is reached
+        while time.time() - start_time < time_limit:
+            schedule.run_pending()
+            time.sleep(1)
+
+        print("Time limit reached. Exiting...")
+        
+        
+    return Response({'msg':'success!!!'})
